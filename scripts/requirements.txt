@@ -1,0 +1,5 @@
+discord
+python-dotenv
+datetime
+bitstring
+more_itertools

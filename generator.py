@@ -15,7 +15,7 @@ class Generator:
         self.round = 0
         self.is_open = is_open
         self.random = random
-        self.prelim_round_active = False
+        self.first_after_prelim = False
         self.prelim_round_matches = None
         self.byes = None
     
@@ -41,7 +41,7 @@ class Generator:
         byes = players[:num_byes]
         prelim_players = players[num_byes:]
         prelim_matches = self.generate_round(prelim_players, prelim = True)
-        self.prelim_round_active = True
+        self.first_after_prelim = True
         self.byes = byes
 
         return (prelim_matches, byes)
@@ -63,8 +63,8 @@ class Generator:
             return next_round_matches
 
         self.remaining_players = list(self.process_advancements(advanced)) if not first else self.remaining_players
-        if self.prelim_round_active: # after advancing players from prelim round, add the byes to next round pool
-            self.prelim_round_active = False
+        if self.first_after_prelim: # after advancing players from prelim round, add the byes to next round pool
+            self.first_after_prelim = False
             self.remaining_players.extend(self.byes)
 
         if self.is_open:
@@ -137,8 +137,4 @@ class Generator:
             ret+="\n"+self.current_round_status(num+1)
         return ret
 
-                
-
-        
-
-    
+            
