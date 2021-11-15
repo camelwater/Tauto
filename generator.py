@@ -1,7 +1,7 @@
 import copy
 import random as rd
 import math
-import Utils
+import utils.gen_utils as gen_utils
 from Player import Player
 from typing import List, Dict, Set
 
@@ -11,11 +11,17 @@ class Generator:
         self.remaining_players = copy.copy(self.players)
         self.out_players = set()
         self.round_groupings = list() #list of every round's groupings (made from generate_round)
+        
         self.total_rounds = math.floor(math.log2(len(players)))
         self.round = 0
+
+        self.round_advancements = [[]] #list of every round's advancements (winners of round)
+
         self.is_open = is_open
         self.random = random
-        self.first_after_prelim = False
+
+        self.has_prelim = not math.log2(len(self.players)).is_integer()
+        self.round_after_prelim = False
         self.prelim_round_matches = None
         self.byes = None
     
@@ -29,30 +35,55 @@ class Generator:
         in this case, the tournament is initialized with this prelim round and then will advance to the first round
         
         '''
-        if not math.log2(len(self.players)).is_integer(): #tournament needs a prelim round
+        if self.has_prelim: #tournament needs a prelim round
             return self.generate_prelim()
 
-        return self.generate_round(first = True)
+        return self.generate_round(self.remaining_players)
     
     def generate_prelim(self):
         players = sorted(self.remaining_players, key=lambda player: player.getRating(), reverse=True)
-        num_byes = Utils.next_power2(len(self.remaining_players)) - len(self.remaining_players)
-        print(num_byes)
+        num_byes = gen_utils.next_power2(len(self.remaining_players)) - len(self.remaining_players)
         byes = players[:num_byes]
         prelim_players = players[num_byes:]
         prelim_matches = self.generate_round(prelim_players, prelim = True)
-        self.first_after_prelim = True
+        self.round_after_prelim = True
         self.byes = byes
 
         return (prelim_matches, byes)
           
-    def next_round(self, advanced = None):
-        '''
-        initialize tournament's next round
-        '''
-        return self.generate_round(advanced)
+    # def next_round(self, advanced = None):
+    #     '''
+    #     initialize tournament's next round
+    #     '''
+    #     return self.generate_round(advanced)
     
-    def generate_round(self, advanced = None, first = False, prelim = False) -> List[List[Player]]:
+    def next_round(self):
+        '''
+        initialize next round's matchups
+        '''
+        next_round = self.generate_round(self.get_last_advancements())
+        self.round_advancements.append([])
+        return next_round
+
+    def advance(self, advanced: list):
+        advanced = list(self.process_advancements(advanced))
+        self.round_advancements[-1].extend(advanced)
+        
+    def get_last_advancements(self):
+        return self.round_advancements[-1]
+    
+    def get_current_groupings(self):
+        try:
+            return self.round_groupings[-1]
+        except IndexError:
+            return self.prelim_round_matches
+
+    def round_finished(self):
+        # print(self.get_last_advancements())
+        # print(self.get_current_groupings())
+        return len(self.get_last_advancements()) == len(self.get_current_groupings())
+
+    def generate_round(self, advanced, prelim = False) -> List[List[Player]]:
         '''
         generate pairs (opponents) from advanced players
         '''
@@ -62,9 +93,9 @@ class Generator:
             self.prelim_round_matches = next_round_matches
             return next_round_matches
 
-        self.remaining_players = list(self.process_advancements(advanced)) if not first else self.remaining_players
-        if self.first_after_prelim: # after advancing players from prelim round, add the byes to next round pool
-            self.first_after_prelim = False
+        self.remaining_players = advanced
+        if self.round_after_prelim: # after advancing players from prelim round, add the byes to next round pool
+            self.round_after_prelim = False
             self.remaining_players.extend(self.byes)
 
         if self.is_open:
@@ -104,11 +135,33 @@ class Generator:
     def random_generation(self):
         remaining = copy.copy(self.remaining_players)
         rd.shuffle(remaining)
-        next_round_matches = Utils.group2(remaining)
+        next_round_matches = gen_utils.group2(remaining)
         return next_round_matches
             
     def process_advancements(self, advanced):
-        return set([player for player in self.remaining_players if Utils.is_advanced(player, advanced)])
+        return set([player for player in self.remaining_players if gen_utils.is_advanced(player, advanced)])
+
+    # def current_round_status(self):
+    #     '''
+    #     get the status of the current round in progress.
+
+    #     shows which players from matchups have already been advanced, and which matchups are still in progress.
+    #     '''
+
+    def get_round_results(self, round):
+        #TODO: need to go through round groupings and cross examine each matchup to see which player 
+        # advanced out of the match (by looking through self.round_advancements)
+
+        if round == -1: round == len(self.round_groupings) #get last round's results
+        if round == 0 and self.prelim_round_matches: #get prelim round (either manually called or automatically since last round was prelim)
+            pass
+    
+    def get_tournament_results(self):
+        '''
+        get results of entire tournament, including each round's results and overall stats of the tournament
+        ie. best player, average rating, etc. (can determine which stats to show)
+        '''
+        pass
 
     def current_round_status(self, round_num = -1, prelim = False):
         if round_num<0: round_num = len(self.round_groupings)
