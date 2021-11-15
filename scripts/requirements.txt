@@ -1,6 +1,5 @@
 discord
 python-dotenv
-atexit
 datetime
 bitstring
 more_itertools
