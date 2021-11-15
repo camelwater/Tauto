@@ -73,3 +73,6 @@ class Registration(commands.Cog):
         Close player registrations.
         '''
         await ctx.send(self.bot.registrator_instances.close_reg())
+
+def setup(bot):
+    bot.add_cog(Registration(bot))
