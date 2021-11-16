@@ -1,12 +1,16 @@
 
 class Player:
-    def __init__(self, id, name, rating=None):
+    def __init__(self, id, discord_id, name, rating=None):
         self.id = id
         self.name = name
+        self.discord_id = discord_id
         self.rating = rating
     
     def getID(self):
         return self.id
+    
+    def getDiscordID(self):
+        return self.discord_id
     
     def getName(self):
         return self.name

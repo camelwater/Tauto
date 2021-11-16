@@ -3,16 +3,39 @@ import discord
 from discord.ext import commands
 import bot
 import utils.gen_utils as gen_utils
+import os
+from fnmatch import fnmatch
 RESERVED_DELIM = SPLIT_DELIM
 
-class Settings:
+class Settings(commands.Cog):
     def __init__(self, bot: bot.TournamentBOT):
         self.bot = bot
+    
+    @commands.command(aliases=['h'])
+    async def help(self, ctx: commands.Context):
+        link1 = "[Introduction](https://github.com/camelwater/tournament-generator/blob/main/README.md)"
+        link2 = "[Documentation](https://github.com/camelwater/tournament-generator/wiki)"
+        e = discord.Embed(title="Help", description=link1+'\n'+link2)
+        # e.add_field(name='\u200b', value= link1 +'\n'+link, inline=False)
+
+        await ctx.send(embed=e)
+    
+    @commands.command(aliases=['info'])
+    async def about(self, ctx):
+        e = discord.Embed(title='Table BOT', description='')
+
+        e.add_field(name='\u200b', value=f'_WRITTEN IN:_ python with discord.py v1.7.3\n\
+                        _LINES OF CODE:_ {count_LOC()}\n_SERVER:_ AWS - Amazon Linux 2 AMI', inline=False)
+
+        link = "[GitHub Repository](https://github.com/camelwater/tournament-generator)"
+        e.add_field(name='\u200b', value= link, inline=False)
+
+        await ctx.send(embed=e)
     
     @commands.command(aliases=['getprefixes', 'pxs'])
     async def prefixes(self, ctx: commands.Context):
         prefixes = self.bot.get_guild_prefixes(ctx.guild)
-        mes = "{} prefixes:\n".format(f'[{ctx.guild.name}]' if ctx.guild else '[DM]')
+        mes = "{} prefixes:\n".format(f'[{ctx.guild.name}]')
         if len(prefixes) == 0:
             mes+="No prefixes."
         for i, p in enumerate(prefixes):
@@ -146,7 +169,7 @@ def get_avail_settings(settingType):
 
     ret = ""
     if settingType in ['defaultOpen']:
-        setting_vals = list(gen_utils.chunks(setting_vals.keys(), len(setting_vals)))
+        setting_vals = list(gen_utils.chunks(list(setting_vals.keys()), len(setting_vals)))
         for ind, values in enumerate(setting_vals):
             ret+=f'**{bool(ind)}**: {" | ".join(map(lambda orig: f"`{orig}`", values))}'
 
@@ -168,6 +191,17 @@ def correct_settingName(setting: str):
             return list(SETTING_VALUES.keys())[lowered_keys.index(setting.lower())]
         except AssertionError:
             return setting
+
+def count_LOC():
+    LOC_count = 0
+    for dir in ['.', './cogs', './utils', './classes']:
+        for file in os.listdir(dir):   
+            if fnmatch(file, '*.py'):
+                with open(f"{dir}/{file}", encoding='utf-8') as f:
+                    for _ in f:
+                        LOC_count+=1
+
+    return LOC_count
     
 def setup(bot):
     bot.add_cog(Settings(bot))

@@ -1,9 +1,11 @@
 import discord
 from discord.ext import commands
-from Errors import *
+from pyasn1_modules.rfc2459 import AdministrationDomainName
+from classes.Errors import *
+import bot
 
 class Registration(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: bot.TournamentBOT):
         self.bot = bot
     
     async def send_temp_messages(self, ctx, *args):
@@ -17,9 +19,14 @@ class Registration(commands.Cog):
         except discord.errors.Forbidden:
             await ctx.send(f"I do not have adequate permissions. Check `{ctx.prefix}help` for a list of the permissions that I need.")
         
-    async def check_instance(self, ctx: commands.Context):
+    @commands.Cog.listener()
+    async def on_command(self, ctx: commands.Context):
+        if ctx.command not in self.bot.get_cog('Registration').get_commands(): return
+        # self.check_instance(ctx)
+
+    def check_instance(self, ctx: commands.Context):
         '''
-        Add a GenChannel instance into the generator_instances dictionary if it isn't present.
+        Add a RegChannel instance into the generator_instances dictionary if it isn't present.
         '''
 
         channel_id = ctx.channel.id
@@ -42,11 +49,11 @@ class Registration(commands.Cog):
             return 
 
         if rating and not rating.isnumeric():
-            await ctx.message.add_reaction(":x:")
+            await ctx.message.add_reaction("❌")
             return await self.send_messages(ctx, "The `rating` parameter must be numeric.")
 
-        reaction, mes = self.bot.registrator_instances[ctx.channel.id].register_player(ctx.message.author.id, name, int(rating))
-        ctx.message.add_reaction(reaction)
+        reaction, mes = self.bot.registrator_instances[ctx.channel.id].register_player(ctx.message.author.id, name, rating)
+        await ctx.message.add_reaction(reaction)
         if mes: await ctx.send(mes)
     
     @register.error
@@ -54,14 +61,26 @@ class Registration(commands.Cog):
         self.check_instance(ctx)
         if self.bot.registrator_instances[ctx.channel.id].is_closed():
             return 
-            
+
         if isinstance(error, commands.MissingRequiredArgument):
             if len(error.args) == 2:
-                ctx.message.add_reaction(":x:")
+                await ctx.message.add_reaction("❌")
                 await self.send_messages(ctx, f"Usage: `{ctx.prefix}register [name] {'[rating]' if self.bot.registrator_instances[ctx.channel.id].using_rating() else '(rating)'}`")
             else:
-                ctx.message.add_reaction(":x:")
+                await ctx.message.add_reaction("❌")
                 await self.send_messages(ctx, f"You must register in this format: `{ctx.prefix}register [name] {'[rating]' if self.bot.registrator_instances[ctx.channel.id].using_rating() else '(rating)'}`")
+
+    @commands.command(aliases=['mreg', 'areg', 'forcereg', 'freg', 'fr'])
+    @commands.has_guild_permissions(administrator=True)
+    async def forceregister(self, ctx: commands.Context, name: str, rating: str = None):
+        if rating and not rating.isnumeric():
+            await ctx.message.add_reaction("❌")
+            return await self.send_messages(ctx, "The `rating` parameter must be numeric.")
+
+        reaction, mes = self.bot.registrator_instances[ctx.channel.id].register_player(0, name, rating, force=True)
+        await ctx.message.add_reaction(reaction)
+        if mes: await ctx.send(mes)
+
 
     @commands.command(aliases=['unregister', 'd', 'q', 'quit', 'leave', 'unreg', 'l'])
     async def drop(self, ctx: commands.Context):
@@ -71,18 +90,24 @@ class Registration(commands.Cog):
         if self.bot.registrator_instances[ctx.channel.id].is_closed():
             return 
         reaction, mes = self.bot.registrator_instances[ctx.channel.id].drop_player(ctx.message.author.id)
-        ctx.message.add_reaction(reaction)
+        await ctx.message.add_reaction(reaction)
         if mes:
             await ctx.send(mes)
 
     @commands.command(aliases=['end','endreg', 'stopreg', 'closereg'])
+    @commands.has_permissions(administrator=True)
     async def close(self, ctx: commands.Context):
         '''
         Close player registrations.
         '''
-        if self.bot.registrator_instances[ctx.channel.id].is_closed():
-            return 
-        await ctx.send(self.bot.registrator_instances[ctx.channel.id].close_reg())
+        if ctx.channel.id in self.bot.registrator_instances:
+            if self.bot.registrator_instances[ctx.channel.id].is_closed():
+                return 
+            await ctx.send(self.bot.registrator_instances[ctx.channel.id].close_reg())
+        elif ctx.channel.id in self.bot.generator_instances:
+            reg_channel_id = self.bot.generator_instances[ctx.channel.id].get_reg_channel()
+            mes = self.bot.registrator_instances[reg_channel_id].close_reg()
+            await ctx.send(mes)
 
 def setup(bot):
     bot.add_cog(Registration(bot))

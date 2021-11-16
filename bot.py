@@ -10,10 +10,11 @@ import traceback as tb
 import sqlite3
 from typing import Tuple, Dict, List, Any
 import atexit
-from Channels import GenChannel, RegChannel
+import classes.Channels as Channels
+
 import argparse
 from utils.discord_utils import SETTING_VALUES, SPLIT_DELIM, DEFAULT_PREFIXES
-import Errors
+import classes.Errors as Errors
 import gspread
 
 
@@ -67,8 +68,8 @@ class TournamentBOT(commands.Bot):
         self.BOT_ID = 907717733582532659
         self.presences = cycle([';help', "{} active tournaments"])
         self.prefixes, self.settings = fetch_prefixes_and_settings()
-        self.generator_instances: Dict[int, GenChannel] = dict() #gen_channel_id: GenChannel instance
-        self.registrator_instances: Dict[int, RegChannel] = dict() #reg_channel_id: RegChannel instance
+        self.generator_instances: Dict[int, Channels.GenChannel] = dict() #gen_channel_id: GenChannel instance
+        self.registrator_instances: Dict[int, Channels.RegChannel] = dict() #reg_channel_id: RegChannel instance
 
         for ext in INIT_EXT:
             self.load_extension(ext)
@@ -91,6 +92,8 @@ class TournamentBOT(commands.Bot):
             #raise error
         elif isinstance(error, commands.errors.ExpectedClosingQuoteError):
             await(ctx.send("Bad command input: missing a closing `\"`.", delete_after=10))
+        elif isinstance(error, commands.BotMissingPermissions):
+            await ctx.send("I am missing these required permissions:" + ", ".join(error.missing_perms))
         elif isinstance(error, Errors.RegChannelSetupError):
             await ctx.send(f"You have not set up this channel to be a registration channel. If you'd like to set this channel as a registration channel, use `{ctx.prefix}open`.", delete_after=7)
         elif isinstance(error, gspread.exceptions.APIError):

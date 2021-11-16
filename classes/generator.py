@@ -2,7 +2,7 @@ import copy
 import random as rd
 import math
 import utils.gen_utils as gen_utils
-from Player import Player
+from classes.Player import Player
 from typing import List, Dict, Set
 
 class Generator:
@@ -36,7 +36,7 @@ class Generator:
         
         '''
         if self.has_prelim: #tournament needs a prelim round
-            return self.generate_prelim()
+            return "Tournament started. Preliminary Round.", self.generate_prelim()
 
         return self.generate_round(self.remaining_players)
     

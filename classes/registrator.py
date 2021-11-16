@@ -5,8 +5,8 @@ import gspread
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets", 'https://spreadsheets.google.com/feeds']
 GC = None
 
-LOCAL_CREDENTIALS_FILE = "credentials_private.json"
-SERVER_CREDENTIALS_FILE = "credentials.json"
+LOCAL_CREDENTIALS_FILE = "resources/credentials_private.json"
+SERVER_CREDENTIALS_FILE = "resources/credentials.json"
 
 def load_google_creds():
     load_creds(local=os.path.getsize(SERVER_CREDENTIALS_FILE) == 2)
@@ -22,21 +22,22 @@ class Registrator:
     def __init__(self, sheets_id, use_rating=False):
         self.sheets_id = sheets_id
         self.use_rating = use_rating
+        self.formatted = False
         self.sheets = GC.open_by_key(sheets_id)
 
-        if len(self.sheets.worksheets()) < 2:
-            self.sheets.add_worksheet(title="Results", rows=100, cols=100)
         self.reg_sheet = self.sheets.get_worksheet(0)
         self.reg_sheet.update_title("Registration")
-        self.res_sheet = self.sheets.get_worksheet(1)
+        try:
+            self.res_sheet = self.sheets.worksheet("Results")
+        except:
+            self.sheets.add_worksheet(title="Results", rows=100, cols=100)
 
-        # self.format_sheets()
-    
+
     def format_sheets(self):
         '''
         Add the correct column headers to the registration and results sheets.
         '''
-        self.reg_sheet.clear()
+        # self.reg_sheet.clear()
         self.reg_sheet.update("A1:D1", [['ID', 'DiscordUserID', 'Name', 'Rating']])
         self.reg_sheet.format("A1:D1", {'textFormat': {'bold': True}})
 
@@ -44,32 +45,45 @@ class Registrator:
         self.res_sheet.update("A2:C2", [['Match', 'Winner', 'Loser']])
         self.res_sheet.format("A2:C2", {'textFormat': {'bold': True}})
 
-    def add_registration(self, player: list):
+    def add_registration(self, player: list, force: bool = False):
         '''
         Add a player registration row to the registration sheet.
         '''
-        if self.registration_exists(player):
-            return ":x:", "You are already registered for this tournament."
+        if not self.formatted:
+            self.format_sheets()
+            self.formatted = True
+
+        if not force and self.registration_exists(player):
+            return "❌", "You are already registered for this tournament."
 
         row_num = self.__get_next_available_row(self.reg_sheet)
         range = f"A{row_num}:D{row_num}"
         player = self.reformat_player(player, row_num-1)
         self.reg_sheet.update(range, player)
         
-        return ":white_check_mark:", None
+        return "✅", None
     
     def remove_registration(self, userID):
         '''
         Remove a player registration row from the registration sheet.
         '''
-        cell = self.reg_sheet.find(userID, in_column=2)
+        cell = self.reg_sheet.find(str(userID), in_column=2)
         if not cell: # registration doesn't exist
-            return ":x:", "You are not registered for this tournament."
+            return "❌", "You are not registered for this tournament."
         self.reg_sheet.delete_rows(cell.row)
 
-        return ":white_check_mark:", None
+        return "✅", None
     
-    def __get_next_available_row(self, sheet: gspread.Worksheet):
+    def load_registrations(self):
+        '''
+        Return all player registrations from registration sheet as a list of lists.
+        '''
+        last_row = self.__get_next_available_row(self.reg_sheet)-1
+        range = f"A2:D{last_row}"
+        return self.reg_sheet.get_values(range)
+    
+    @staticmethod
+    def __get_next_available_row(sheet: gspread.Worksheet):
         '''
         Find the next available row to insert a player registration.
         '''
@@ -86,7 +100,7 @@ class Registrator:
         Check if player registration is already present in the registration sheet.
         '''
         user_id = player[0]
-        return self.reg_sheet.find(user_id, in_column=2)
+        return self.reg_sheet.find(str(user_id), in_column=2)
 
 # if __name__ == "__main__":
 #     sheet_id = "1I9Qt8UUanXh06P6J5-j2Vka8ddW7HUIiuhCR5F_iDyE"
