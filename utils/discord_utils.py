@@ -14,6 +14,18 @@ SETTING_VALUES = {
         "true": 1, 
         "yes": 1, 
         "y": 1
+    }, 
+    'defaultRandom':{
+        0: 0, 
+        "f": 0,
+        "false": 0,
+        "no": 0, 
+        "n": 0,
+        1: 1, 
+        "t": 1,
+        "true": 1, 
+        "yes": 1, 
+        "y": 1
     }
 }
 

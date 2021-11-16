@@ -98,7 +98,7 @@ class Settings(commands.Cog):
         spaces = max([len(k[0]) for k in settings.items()])+1
         out = f'asciidoc\n== [{ctx.guild.name}] server settings =='
         for name, val in settings.items():
-            if name in ['defaultOpen']:
+            if name in ['defaultOpen', 'defaultRandom']:
                 val = bool(val)
             
             out+="\n{}{}:: {}".format(name, " "*(spaces-len(name)), val)
@@ -138,7 +138,7 @@ class Settings(commands.Cog):
             return
 
         valid = False
-        if settingType in ['defaultOpen']:
+        if settingType in ['defaultOpen', 'defaultRandom']:
             if default.isnumeric():
                 default = int(default)
                 if default in SETTING_VALUES[settingType]: valid = True
@@ -168,7 +168,7 @@ def get_avail_settings(settingType):
         return None
 
     ret = ""
-    if settingType in ['defaultOpen']:
+    if settingType in ['defaultOpen', 'defaultRandom']:
         setting_vals = list(gen_utils.chunks(list(setting_vals.keys()), len(setting_vals)))
         for ind, values in enumerate(setting_vals):
             ret+=f'**{bool(ind)}**: {" | ".join(map(lambda orig: f"`{orig}`", values))}'
