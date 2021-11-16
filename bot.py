@@ -12,8 +12,9 @@ from typing import Tuple, Dict, List, Any
 import atexit
 from Channels import GenChannel, RegChannel
 import argparse
-from utils.discord_utils import SETTING_VALUES
+from utils.discord_utils import SETTING_VALUES, SPLIT_DELIM, DEFAULT_PREFIXES
 import Errors
+import gspread
 
 
 creds = dotenv_values(".env.testing") or dotenv_values(".env") #.env.testing for local testing, .env for deployment
@@ -38,9 +39,6 @@ cur.execute('''CREATE TABLE IF NOT EXISTS servers (
                 id integer PRIMARY KEY,
                 prefixes text,
                 defaultOpen BIT)''')
-
-SPLIT_DELIM = '{d/D17¤85xu§ey¶}'
-DEFAULT_PREFIXES = [';', ',']
 
 def fetch_prefixes_and_settings() -> Tuple[Dict, Dict]:
     cur.execute('SELECT * FROM servers')
@@ -95,6 +93,8 @@ class TournamentBOT(commands.Bot):
             await(ctx.send("Bad command input: missing a closing `\"`.", delete_after=10))
         elif isinstance(error, Errors.RegChannelSetupError):
             await ctx.send(f"You have not set up this channel to be a registration channel. If you'd like to set this channel as a registration channel, use `{ctx.prefix}open`.", delete_after=7)
+        elif isinstance(error, gspread.exceptions.APIError):
+            await ctx.send(f"There was an error with the Google API. Try again later.")
         else:
             await ctx.send(f"An unidentified internal bot error occurred. Wait a bit and try again later.\nIf this issue persists, `{ctx.prefix}reset` the table.")
             error_tb = ''.join(tb.format_exception(type(error), error, error.__traceback__))

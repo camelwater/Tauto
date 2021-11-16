@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 from generator import Generator
 from Channels import RegChannel, GenChannel
+from registrator import Registrator
 
 # TODO: need to add some sort of check for cross-cog commands (Registration commands can't be used in generation channels, and vice versa)
 
@@ -36,7 +37,7 @@ class Generation(commands.Cog):
     async def cog_before_invoke(self,ctx):
         self.set_instance(ctx)
 
-    @commands.command(aliases=['o', 'register'])
+    @commands.command(aliases=['o', 'openreg', 'openregistration'])
     async def open(self, ctx: commands.Context, reg_channel_id: int, sheets_id: str, self_rating: bool = False):
         '''
         Opens a channel for tournament registrations.
@@ -52,12 +53,12 @@ class Generation(commands.Cog):
             return await ctx.send("The registration channel you provided was invalid.")
 
         self.bot.generator_instances[ctx.channel.id].setup(reg_channel_id, sheets_id, self_rating)
-        self.bot.registrator_instances[reg_channel_id] = RegChannel(self.bot, ctx, registrator=Registrator())
-        self.bot.registrator_instances[reg_channel_id].setup(ctx.channel.id, sheets_id)
+        self.bot.registrator_instances[reg_channel_id] = RegChannel(self.bot, ctx)
+        self.bot.registrator_instances[reg_channel_id].setup(ctx.channel.id, sheets_id, self_rating)
         
         await ctx.send(f"I am now watching registrations in <#{reg_channel_id}>.")
 
-    @commands.command(aliases=['endreg', 'closereg', 'stopreg'])
+    @commands.command(aliases=['end', 'endreg', 'closereg', 'stopreg'])
     async def close(self, ctx: commands.Context):
         '''
         Closes the registration.
@@ -130,6 +131,13 @@ class Generation(commands.Cog):
     async def results(self, ctx: commands.Context, round = -1):
         '''
         Get the results of a specific round (all matchups and winners of each matchup).
+        '''
+        pass
+
+    @commands.command(aliases=['stop', 'done', 'reset', 'endtournament', 'clear'])
+    async def finish(self, ctx: commands.Context):
+        '''
+        Finish the tournament, update the results to the Google Sheet, and clear the generation instance.
         '''
         pass
 

@@ -38,17 +38,23 @@ class Registration(commands.Cog):
         '''
         Register for the tournament.
         '''
+        if self.bot.registrator_instances[ctx.channel.id].is_closed():
+            return 
+
         if rating and not rating.isnumeric():
             await ctx.message.add_reaction(":x:")
             return await self.send_messages(ctx, "The `rating` parameter must be numeric.")
 
         reaction, mes = self.bot.registrator_instances[ctx.channel.id].register_player(ctx.message.author.id, name, int(rating))
         ctx.message.add_reaction(reaction)
-        await ctx.send(mes)
+        if mes: await ctx.send(mes)
     
     @register.error
     async def register_error(self, ctx: commands.Context, error):
         self.check_instance(ctx)
+        if self.bot.registrator_instances[ctx.channel.id].is_closed():
+            return 
+            
         if isinstance(error, commands.MissingRequiredArgument):
             if len(error.args) == 2:
                 ctx.message.add_reaction(":x:")
@@ -62,17 +68,21 @@ class Registration(commands.Cog):
         '''
         Drop from the tournament.
         '''
-
+        if self.bot.registrator_instances[ctx.channel.id].is_closed():
+            return 
         reaction, mes = self.bot.registrator_instances[ctx.channel.id].drop_player(ctx.message.author.id)
         ctx.message.add_reaction(reaction)
-        await ctx.send(mes)
+        if mes:
+            await ctx.send(mes)
 
-    @commands.command(aliases=['end', 'endreg', 'stopreg', 'closereg'])
+    @commands.command(aliases=['end','endreg', 'stopreg', 'closereg'])
     async def close(self, ctx: commands.Context):
         '''
         Close player registrations.
         '''
-        await ctx.send(self.bot.registrator_instances.close_reg())
+        if self.bot.registrator_instances[ctx.channel.id].is_closed():
+            return 
+        await ctx.send(self.bot.registrator_instances[ctx.channel.id].close_reg())
 
 def setup(bot):
     bot.add_cog(Registration(bot))
