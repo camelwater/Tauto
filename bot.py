@@ -231,9 +231,9 @@ class TournamentBOT(commands.Bot):
         self.settings[guild] = default
 
         cur.execute('''UPDATE servers 
-                        SET defaultOpen=? 
+                        SET defaultOpen=?, defaultRandom=?
                         WHERE id=?''',
-                    (1, guild))
+                    (default.get('defaultOpen'), default.get('defaultRandom'), guild))
         conn.commit()
 
         return "Server settings have been reset to default values."
