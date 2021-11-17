@@ -4,6 +4,7 @@ import math
 import utils.gen_utils as gen_utils
 from classes.Player import Player
 from typing import List, Dict, Set
+import utils.discord_utils as discord_utils
 
 class Generator:
     def __init__(self, players: Set[Player] = list(), is_open = True, random=False): #random only applies to open tournaments (bracketed tournaments will always be randomized, not seeded)
@@ -24,6 +25,8 @@ class Generator:
         self.round_after_prelim = False
         self.prelim_round_matches = None
         self.byes = None
+
+        self.winner = None
     
     def start(self):
         '''
@@ -36,9 +39,10 @@ class Generator:
         
         '''
         if self.has_prelim: #tournament needs a prelim round
-            return "Tournament started. Preliminary Round.", self.generate_prelim()
+            return "Tournament started. Preliminary Round generation complete.", "prelim", self.matchups_to_str(self.generate_prelim())
 
-        return self.generate_round(self.remaining_players)
+        self.round+=1
+        return "Tournament started. Round 1 generation complete.", 1, self.matchups_to_str(self.generate_round(self.remaining_players))
     
     def generate_prelim(self):
         players = sorted(self.remaining_players, key=lambda player: player.getRating(), reverse=True)
@@ -50,12 +54,6 @@ class Generator:
         self.byes = byes
 
         return (prelim_matches, byes)
-          
-    # def next_round(self, advanced = None):
-    #     '''
-    #     initialize tournament's next round
-    #     '''
-    #     return self.generate_round(advanced)
     
     def next_round(self):
         '''
@@ -63,12 +61,30 @@ class Generator:
         '''
         next_round = self.generate_round(self.get_last_advancements())
         self.round_advancements.append([])
-        return next_round
+        self.round+=1
+        return f"Round {self.round} generation complete.", self.round, self.matchups_to_str(next_round)
 
     def advance(self, advanced: list):
         advanced = list(self.process_advancements(advanced))
         self.round_advancements[-1].extend(advanced)
-        
+        return f"{len(advanced)} players advanced. {len(self.round_advancements[-1])}/{len(self.get_current_groupings())} players advanced from {'preliminary round' if self.round==0 else f'round {self.round}'}."
+    
+    def unadvance(self, players: list):
+        players = list(self.process_advancements(players))
+        for player in players:
+            try:
+                self.round_advancements[-1].remove(player)
+            except:
+                pass
+        return f"{len(players)} players unadvanced. {len(self.round_advancements[-1])}/{len(self.get_current_groupings())} players advanced from {'preliminary round' if self.round==0 else f'round {self.round}'}."
+
+    def determine_winner(self, players):
+        winner = list(self.process_advancements(players))[0]
+        self.round_advancements[-1].append(winner)
+        self.winner = winner
+
+        return f"Final round finished. {self.winner.get_displayName()} is the winner."
+
     def get_last_advancements(self):
         return self.round_advancements[-1]
     
@@ -77,11 +93,16 @@ class Generator:
             return self.round_groupings[-1]
         except IndexError:
             return self.prelim_round_matches
+        
+    def is_final(self):
+        '''
+        Whether the tournament is in the final round (1v1).
+        '''
+        return self.round>0 and len(self.get_current_groupings()) == 1
 
     def round_finished(self):
-        # print(self.get_last_advancements())
-        # print(self.get_current_groupings())
-        return len(self.get_last_advancements()) == len(self.get_current_groupings())
+        return (len(self.get_last_advancements()) == len(self.get_current_groupings()), 
+                    f"{len(self.get_last_advancements())}/{len(self.get_current_groupings())} players advanced.")
 
     def generate_round(self, advanced, prelim = False) -> List[List[Player]]:
         '''
@@ -118,7 +139,7 @@ class Generator:
         number of remaining participants must be base 2
 
         ex.
-        8 -> 1v8, 2v7, 3v6, etc.
+        8 -> 1v8, 2v7, 3v6, 4v5
         '''
         middle = int(len(self.remaining_players)/2)
         remaining_front = sorted(self.remaining_players, key=lambda player: player.getRating(), reverse=True)
@@ -126,8 +147,8 @@ class Generator:
         remaining_front = remaining_front[:middle]
         matches = list()
         for f, b in zip(remaining_front, remaining_back):
-            match = [f, b]
-            rd.shuffle(match)
+            rand_num = rd.randint(0,1)
+            match = [f, b] if rand_num == 0 else [b, f]
             matches.append(match)
         
         return matches
@@ -147,8 +168,27 @@ class Generator:
 
     #     shows which players from matchups have already been advanced, and which matchups are still in progress.
     #     '''
+    def matchups_to_str(self, matchups: List[List[Player]]):
+        '''
+        Convert round matchups (list of lists) to a string.
+        '''
+        cur_round = "Preliminary Round" if self.round == 0 else f"Round {self.round}"
+        ret = cur_round + " Matchups\n\n"
 
-    def get_round_results(self, round):
+        if isinstance(matchups, tuple): #prelim round
+            matchups, byes = matchups[0], matchups[1]
+
+            ret+="Byes:\n"
+            for b in byes:
+                ret+=' - '+str(b)+'\n'
+            ret+="\n"
+
+        for i, match in enumerate(matchups):
+            ret+=f"Match {i+1}: {discord_utils.disc_clean(match[0].get_full_display())} {{A}} vs. {discord_utils.disc_clean(match[1].get_full_display())} {{DA}}\n"
+        
+        return ret
+
+    def get_round_results(self, round=-1):
         #TODO: need to go through round groupings and cross examine each matchup to see which player 
         # advanced out of the match (by looking through self.round_advancements)
 

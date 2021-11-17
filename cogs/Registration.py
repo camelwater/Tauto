@@ -77,7 +77,7 @@ class Registration(commands.Cog):
             await ctx.message.add_reaction("❌")
             return await self.send_messages(ctx, "The `rating` parameter must be numeric.")
 
-        reaction, mes = self.bot.registrator_instances[ctx.channel.id].register_player(0, name, rating, force=True)
+        reaction, mes = self.bot.registrator_instances[ctx.channel.id].register_player(None, name, rating, force=True)
         await ctx.message.add_reaction(reaction)
         if mes: await ctx.send(mes)
 

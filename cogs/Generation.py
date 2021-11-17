@@ -4,6 +4,7 @@ from classes.generator import Generator
 from classes.Channels import RegChannel, GenChannel
 from classes.registrator import Registrator
 import bot
+import utils.discord_utils as discord_utils
 
 # TODO: need to add some sort of check for cross-cog commands (Registration commands can't be used in generation channels, and vice versa)
 
@@ -54,6 +55,9 @@ class Generation(commands.Cog):
                 return True
         elif not self.bot.generator_instances[ctx.channel.id].is_active():
             await ctx.send(f"You need to have an active tournament before using `{ctx.prefix}{command}`.")
+            return True
+        elif command!="finish" and self.bot.generator_instances[ctx.channel.id].is_finished():
+            await ctx.send(f"The tournament has already been finished. You can end the tournament with `{ctx.prefix}finish` or open a new one with `{ctx.prefix}open`.")
             return True
 
         return False
@@ -113,8 +117,13 @@ class Generation(commands.Cog):
         '''
         if await self.check_callable(ctx, "start"): return
 
-        mes = self.bot.generator_instances[ctx.channel.id].start_tournament()
+        mes, round, file_content = self.bot.generator_instances[ctx.channel.id].start_tournament()
+        dir = './temp_files/'
+        filename = f"round_{round}_matchups-{ctx.channel.id}.txt"
+        r_file = discord_utils.create_temp_file(filename, file_content, dir=dir)
+        discord_utils.delete_file(dir+filename)
         await ctx.send(mes)
+        await ctx.send(file = discord.File(fp=r_file, filename=filename))
     
     @commands.command(aliases=['a', 'adv'])
     @commands.has_permissions(administrator=True)
@@ -124,18 +133,19 @@ class Generation(commands.Cog):
         '''
         #TODO: process different player args (have to split by newlines or another special character)
         if await self.check_callable(ctx, "advance"): return
+        players = players_arg.split("\n")
+        players = [player.strip().lstrip("<@").lstrip("<@!").rstrip(">") for player in players]
 
-        players = list()
         mes = self.bot.generator_instances[ctx.channel.id].advance_players(players)
         await ctx.send(mes)
     
     @advance.error
     async def advance_error(self, ctx: commands.Context, error):
         self.set_instance(ctx)
-        if await self.check_callable("advance"): return
+        if await self.check_callable(ctx, "advance"): return
 
         if isinstance(error, commands.MissingRequiredArgument):
-            await self.send_temp_messages(ctx, f"Usage: `{ctx.prefix}advance [player, ...]")
+            await self.send_temp_messages(ctx, f"Usage: `{ctx.prefix}advance [player, ...]`")
     
     @commands.command(aliases=['ua', 'unadv'])
     @commands.has_permissions(administrator=True)
@@ -145,17 +155,19 @@ class Generation(commands.Cog):
         '''
         #TODO: process different player args (have to split by newlines or another special character)
         if await self.check_callable(ctx, "unadvance"): return
-        players = list()
+        players = players_arg.split("\n")
+        players = [player.strip().lstrip("<@").lstrip("<@!").rstrip(">") for player in players]
+
         mes = self.bot.generator_instances[ctx.channel.id].unadvance_players(players)
         await ctx.send(mes)
     
     @unadvance.error
     async def unadvance_error(self, ctx: commands.Context, error):
         self.set_instance(ctx)
-        if await self.check_callable("unadvance"): return
+        if await self.check_callable(ctx, "unadvance"): return
 
         if isinstance(error, commands.MissingRequiredArgument):
-            await self.send_temp_messages(ctx, f"Usage: `{ctx.prefix}unadvance [player, ...]")
+            await self.send_temp_messages(ctx, f"Usage: `{ctx.prefix}unadvance [player, ...]`")
     
     @commands.command(aliases=['increment', 'next'])
     @commands.has_permissions(administrator=True)
@@ -165,8 +177,15 @@ class Generation(commands.Cog):
         '''
         if await self.check_callable(ctx, "nextround"): return
 
-        mes = self.bot.generator_instances[ctx.channel.id].next_round()
+        mes, round, file_content = self.bot.generator_instances[ctx.channel.id].next_round()
+        if file_content is None:
+            return await ctx.send(mes)
+        dir = './temp_files/'
+        filename = f"round_{round}_matchups-{ctx.channel.id}.txt"
+        r_file = discord_utils.create_temp_file(filename, file_content, dir=dir)
+        discord_utils.delete_file(dir+filename)
         await ctx.send(mes)
+        await ctx.send(file = discord.File(fp=r_file, filename=filename))
     
     @commands.command(aliases=['rs', 'roundstatus'])
     @commands.has_permissions(administrator=True)
@@ -192,9 +211,15 @@ class Generation(commands.Cog):
         Finish the tournament, update the results to the Google Sheet, and clear the generation instance.
         '''
         # if await self.check_callable(ctx, "finish"): return
-        if not self.bot.generator_instances[ctx.channel.id].is_active():
+        gen_instance = self.bot.generator_instances[ctx.channel.id]
+        if not gen_instance.is_active():
             return await ctx.send("You don't have an active tournament to stop.")
 
+        if gen_instance.is_finished():
+            gen_instance.end_tournament()
+            await ctx.send(f"Tournament has been ended. Congratulations to the winner, {gen_instance.get_winner()}!")
+        else:
+            await ctx.send(f"Tournament has been reset. Do `{ctx.prefix}open` to open a new tournament.")
         self.bot.generator_instances.pop(ctx.channel.id)
 
 def setup(bot):

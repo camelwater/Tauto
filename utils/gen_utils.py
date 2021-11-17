@@ -4,7 +4,7 @@ import random as rd
 
 def is_advanced(player, advanced_group):
     advanced_group_lowered = [p.lower() for p in advanced_group]
-    return player.getName().lower() in advanced_group_lowered or str(player.getID()) in advanced_group
+    return player.getName().lower() in advanced_group_lowered or str(player.getID()) in advanced_group or str(player.getDiscordID) in advanced_group
     
 def group2(players, shuffle_color=True):#UTILS
     groups = list(chunks(players, 2))

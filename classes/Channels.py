@@ -3,6 +3,7 @@ from classes.registrator import Registrator
 from classes.generator import Generator
 import bot
 from classes.Player import Player
+import datetime
 
 class RegChannel:
 
@@ -37,6 +38,9 @@ class RegChannel:
         '''
         return self.registrator.load_registrations()
     
+    def cleanup_reg(self):
+        self.registrator.reg_sheet = None
+    
     def is_closed(self):
         return not self.open
     
@@ -63,6 +67,7 @@ class GenChannel:
         self.ctx = ctx
         self.prefix = ctx.prefix
         self.active = False
+        self.last_active = None
         self.reg_channel = None
 
         self.generator = generator
@@ -80,19 +85,48 @@ class GenChannel:
     def start_tournament(self):
         registrator_instance = self.bot.registrator_instances[self.reg_channel]
         player_list = registrator_instance.load_registrations()
-        player_list = list(map(lambda l: Player(int(l[0]), int(l[1]), l[2], None if l[3].lower()=="none" else int(l[3])), player_list)) # convert lists into player objects
+        player_list = list(map(lambda l: Player(int(l[0]), None if l[3].lower()=="none" else int(l[1]), l[2], None if l[3].lower()=="none" else int(l[3])), player_list)) # convert lists into player objects
 
         self.generator = Generator(player_list, is_open=self.open, random=self.random)
-        ret =  self.generator.start()
-        self.bot.registrator_instances.pop(self.reg_channel) #remove registrator instance now that we are done using it
+        ret = self.generator.start()
+        # self.bot.registrator_instances.pop(self.reg_channel) #remove registrator instance now that we are done using it
+        registrator_instance.cleanup_reg()
         self.active = True
         return ret
+    
+    def advance_players(self, players):
+        if self.generator.is_final():
+            return self.advance_winner(players)
+        
+        return self.generator.advance(players)
+    
+    def unadvance_players(self, players):
+        return self.generator.unadvance(players)
+        
+    def advance_winner(self, players):
+        if len(players)>1:
+            return "You cannot have more than one winner."
+
+        self.last_active = datetime.datetime.now()   
+        return self.generator.determine_winner(players)
+    
+    def next_round(self):
+        round_finished, status_str = self.generator.round_finished()
+        if not round_finished:
+            return "The current round is still in progress. " + status_str, None, None
+        
+        registration_instance = self.bot.registrator_instances[self.reg_channel]
+        registration_instance.update_round_results(self.generator.get_round_results())
+        return self.generator.next_round()
 
     def is_active(self):
         return self.active
     
     def is_open(self):
         return self.reg_channel is not None
+    
+    def is_finished(self):
+        return self.generator.winner is not None
 
     def get_ctx(self):
         return self.ctx

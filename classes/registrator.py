@@ -1,4 +1,5 @@
 import os
+from typing import List
 # import pandas as pd
 import gspread
 
@@ -23,14 +24,14 @@ class Registrator:
         self.sheets_id = sheets_id
         self.use_rating = use_rating
         self.formatted = False
-        self.sheets = GC.open_by_key(sheets_id)
+        sheets = GC.open_by_key(sheets_id)
 
-        self.reg_sheet = self.sheets.get_worksheet(0)
+        self.reg_sheet = sheets.get_worksheet(0)
         self.reg_sheet.update_title("Registration")
         try:
-            self.res_sheet = self.sheets.worksheet("Results")
+            self.res_sheet = sheets.worksheet("Results")
         except:
-            self.sheets.add_worksheet(title="Results", rows=100, cols=100)
+            self.res_sheet = sheets.add_worksheet(title="Results", rows=100, cols=100)
 
 
     def format_sheets(self):
@@ -81,6 +82,12 @@ class Registrator:
         last_row = self.__get_next_available_row(self.reg_sheet)-1
         range = f"A2:D{last_row}"
         return self.reg_sheet.get_values(range)
+    
+    def add_round_results(self, results: List[List[str]]):
+        '''
+        Add a round's results to the results sheet.
+        '''
+        pass
     
     @staticmethod
     def __get_next_available_row(sheet: gspread.Worksheet):
