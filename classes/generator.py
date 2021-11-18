@@ -5,25 +5,26 @@ import utils.gen_utils as gen_utils
 from classes.Player import Player
 from typing import List, Dict, Set
 import utils.discord_utils as discord_utils
+from collections import defaultdict
 
 class Generator:
     def __init__(self, players: Set[Player] = list(), is_open = True, random=False): #random only applies to open tournaments (bracketed tournaments will always be randomized, not seeded)
         self.players = players
         self.remaining_players = copy.copy(self.players)
         self.out_players = set()
-        self.round_groupings = list() #list of every round's groupings (made from generate_round)
+        self.round_groupings = defaultdict(list) #dict of every round's groupings (made from generate_round)
         
         self.total_rounds = math.floor(math.log2(len(players)))
         self.round = 0
 
-        self.round_advancements = [[]] #list of every round's advancements (winners of round)
+        self.round_advancements = defaultdict(list) #dict of every round's advancements (winners of round)
+        self.current_advancements = []
 
         self.is_open = is_open
         self.random = random
 
         self.has_prelim = not math.log2(len(self.players)).is_integer()
         self.round_after_prelim = False
-        self.prelim_round_matches = None
         self.byes = None
 
         self.winner = None
@@ -59,40 +60,40 @@ class Generator:
         '''
         initialize next round's matchups
         '''
-        next_round = self.generate_round(self.get_last_advancements())
-        self.round_advancements.append([])
+        self.round_advancements[self.round].extend(self.current_advancements)
         self.round+=1
+        next_round = self.generate_round(self.current_advancements)
+        self.current_advancements = []
+
         return f"Round {self.round} generation complete.", self.round, self.matchups_to_str(next_round)
 
     def advance(self, advanced: list):
         advanced = list(self.process_advancements(advanced))
-        self.round_advancements[-1].extend(advanced)
-        return f"{len(advanced)} players advanced. {len(self.round_advancements[-1])}/{len(self.get_current_groupings())} players advanced from {'preliminary round' if self.round==0 else f'round {self.round}'}."
+        self.current_advancements.extend(advanced)
+        return f"{len(advanced)} players advanced. {len(self.current_advancements)}/{len(self.get_current_groupings())} players advanced from {'preliminary round' if self.round==0 else f'round {self.round}'}."
     
     def unadvance(self, players: list):
         players = list(self.process_advancements(players))
         for player in players:
             try:
-                self.round_advancements[-1].remove(player)
+                self.current_advancements.remove(player)
             except:
                 pass
-        return f"{len(players)} players unadvanced. {len(self.round_advancements[-1])}/{len(self.get_current_groupings())} players advanced from {'preliminary round' if self.round==0 else f'round {self.round}'}."
+        return f"{len(players)} players unadvanced. {len(self.current_advancements)}/{len(self.get_current_groupings())} players advanced from {'preliminary round' if self.round==0 else f'round {self.round}'}."
 
     def determine_winner(self, players):
         winner = list(self.process_advancements(players))[0]
-        self.round_advancements[-1].append(winner)
+        self.round_advancements[self.round].append(winner)
+        # self.round_advancements[-1].append(winner)
         self.winner = winner
 
         return f"Final round finished. {self.winner.get_displayName()} is the winner."
 
     def get_last_advancements(self):
-        return self.round_advancements[-1]
+        return list(self.round_advancements.values())[-1]
     
     def get_current_groupings(self):
-        try:
-            return self.round_groupings[-1]
-        except IndexError:
-            return self.prelim_round_matches
+        return list(self.round_groupings.values())[-1]
         
     def is_final(self):
         '''
@@ -101,18 +102,13 @@ class Generator:
         return self.round>0 and len(self.get_current_groupings()) == 1
 
     def round_finished(self):
-        return (len(self.get_last_advancements()) == len(self.get_current_groupings()), 
-                    f"{len(self.get_last_advancements())}/{len(self.get_current_groupings())} players advanced.")
+        return (len(self.current_advancements) == len(self.get_current_groupings()), 
+                    f"{len(self.current_advancements)}/{len(self.get_current_groupings())} players advanced.")
 
     def generate_round(self, advanced, prelim = False) -> List[List[Player]]:
         '''
         generate pairs (opponents) from advanced players
         '''
-        if prelim:
-            self.remaining_players = advanced
-            next_round_matches = self.random_generation()
-            self.prelim_round_matches = next_round_matches
-            return next_round_matches
 
         self.remaining_players = advanced
         if self.round_after_prelim: # after advancing players from prelim round, add the byes to next round pool
@@ -120,15 +116,11 @@ class Generator:
             self.remaining_players.extend(self.byes)
 
         if self.is_open:
-            if self.random:
-                next_round_matches = self.random_generation()
-            else:
-                next_round_matches = self.seeded_generation()
-
+            next_round_matches = self.random_generation() if self.random else self.seeded_generation()
         else:
             next_round_matches = self.random_generation()
         
-        self.round_groupings.append(next_round_matches)
+        self.round_groupings[self.round] = next_round_matches
         
         return next_round_matches
     
@@ -188,14 +180,29 @@ class Generator:
         
         return ret
 
-    def get_round_results(self, round=-1):
-        #TODO: need to go through round groupings and cross examine each matchup to see which player 
-        # advanced out of the match (by looking through self.round_advancements)
+    def get_round_results(self, round=-1, local_call=False):
+        if round == -1: round = list(self.round_advancements.keys())[-1] #get last round's results
 
-        if round == -1: round == len(self.round_groupings) #get last round's results
-        if round == 0 and self.prelim_round_matches: #get prelim round (either manually called or automatically since last round was prelim)
-            pass
-    
+        try:
+            assert(round in self.round_advancements)
+        except AssertionError:
+            return f"{round} is an invalid round: it must be from {list(self.round_advancements.keys())[0]}-{list(self.round_advancements.keys())[-1]}, or \"prelim\" if there was a preliminary round."
+
+        round_data = self.__round_results(round)
+        return ("Prelim Round" if round == 0 else f"Round {round}"), round_data
+        
+    def __round_results(self, round):
+       
+        matchups = []
+        for num, match in enumerate(self.round_groupings[round]):  
+            player1 = match[0].get_full_display()
+            player2 = match[1].get_full_display()
+            match = [num+1, player1, player2] if player1 in self.round_advancements[round] else [num+1, player2, player1]
+
+            matchups.append(match)
+        
+        return matchups
+
     def get_tournament_results(self):
         '''
         get results of entire tournament, including each round's results and overall stats of the tournament

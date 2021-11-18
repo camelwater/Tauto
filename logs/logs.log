@@ -1,383 +1,77 @@
-2021-11-15 20:21:19,836 ERROR -> in command: set
+2021-11-17 23:42:53,493 ERROR -> in command: start
 Traceback (most recent call last):
   File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\discord\ext\commands\core.py", line 85, in wrapped
     ret = await coro(*args, **kwargs)
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\cogs\Settings.py", line 127, in set
-    avail_settings = get_avail_settings(settingType)
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\cogs\Settings.py", line 172, in get_avail_settings
-    setting_vals = list(gen_utils.chunks(setting_vals.keys(), len(setting_vals)))
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\utils\gen_utils.py", line 22, in chunks
-    yield l[i:i+n]
-TypeError: 'dict_keys' object is not subscriptable
+  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\cogs\Generation.py", line 120, in start
+    mes, round, file_content = self.bot.generator_instances[ctx.channel.id].start_tournament()
+  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\classes\Channels.py", line 94, in start_tournament
+    player_list = list(map(lambda l: Player(int(l[0]), None if l[3].lower()=="none" else int(l[1]), l[2], None if l[3].lower()=="none" else int(l[3])), player_list)) # convert lists into player objects
+  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\classes\Channels.py", line 94, in <lambda>
+    player_list = list(map(lambda l: Player(int(l[0]), None if l[3].lower()=="none" else int(l[1]), l[2], None if l[3].lower()=="none" else int(l[3])), player_list)) # convert lists into player objects
+ValueError: invalid literal for int() with base 10: 'None'
 
 
-2021-11-15 20:22:59,665 ERROR -> in command: start
+2021-11-17 23:47:14,401 ERROR -> in command: nextround
 Traceback (most recent call last):
   File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\discord\ext\commands\core.py", line 85, in wrapped
     ret = await coro(*args, **kwargs)
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\cogs\Generation.py", line 77, in start
-    mes = self.bot.generator_instances[ctx.channel.id].start_tournament()
-KeyError: 775253663059935263
+  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\cogs\Generation.py", line 180, in nextround
+    mes, round, file_content = self.bot.generator_instances[ctx.channel.id].next_round()
+  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\classes\Channels.py", line 125, in next_round
+    registration_instance.update_round_results(self.generator.get_round_results())
+  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\classes\Channels.py", line 45, in update_round_results
+    self.registrator.add_round_results(results)
+  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\classes\registrator.py", line 91, in add_round_results
+    title_range, results_range = self.__get_next_results_range(self.res_sheet, len(results_data))
+TypeError: __get_next_results_range() takes 2 positional arguments but 3 were given
 
 
-2021-11-15 20:24:59,939 ERROR -> in command: start
+2021-11-17 23:48:33,457 ERROR -> in command: nextround
 Traceback (most recent call last):
   File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\discord\ext\commands\core.py", line 85, in wrapped
     ret = await coro(*args, **kwargs)
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\cogs\Generation.py", line 82, in start
-    mes = self.bot.generator_instances[ctx.channel.id].start_tournament()
-KeyError: 775253663059935263
-
-
-2021-11-15 20:25:53,297 ERROR -> in command: start
-Traceback (most recent call last):
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\discord\ext\commands\core.py", line 85, in wrapped
-    ret = await coro(*args, **kwargs)
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\cogs\Generation.py", line 82, in start
-    mes = self.bot.generator_instances[ctx.channel.id].start_tournament()
-KeyError: 775253663059935263
-
-
-2021-11-15 20:26:06,194 ERROR -> in command: start
-Traceback (most recent call last):
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\discord\ext\commands\core.py", line 85, in wrapped
-    ret = await coro(*args, **kwargs)
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\cogs\Generation.py", line 82, in start
-    mes = self.bot.generator_instances[ctx.channel.id].start_tournament()
-KeyError: 775253663059935263
-
-
-2021-11-15 20:26:53,066 ERROR -> in command: start
-Traceback (most recent call last):
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\discord\ext\commands\core.py", line 85, in wrapped
-    ret = await coro(*args, **kwargs)
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\cogs\Generation.py", line 83, in start
-    mes = self.bot.generator_instances[ctx.channel.id].start_tournament()
-KeyError: 775253663059935263
-
-
-2021-11-15 20:27:39,773 ERROR -> in command: start
-Traceback (most recent call last):
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\discord\ext\commands\core.py", line 85, in wrapped
-    ret = await coro(*args, **kwargs)
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\cogs\Generation.py", line 83, in start
-    mes = self.bot.generator_instances[ctx.channel.id].start_tournament()
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\classes\Channels.py", line 73, in start_tournament
-    registrator_instance = self.bot.registrator_instances[self.reg_channel]
-AttributeError: 'GenChannel' object has no attribute 'reg_channel'
-
-
-2021-11-15 20:36:06,818 ERROR -> _ClientEventTask exception was never retrieved
-future: <ClientEventTask state=finished event=on_message coro=<bound method BotBase.on_message of <__main__.TournamentBOT object at 0x000001F6964810A0>> exception=RegChannelSetupError()>
-Traceback (most recent call last):
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\discord\ext\commands\bot.py", line 939, in invoke
-    await ctx.command.invoke(ctx)
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\discord\ext\commands\core.py", line 855, in invoke
-    await self.prepare(ctx)
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\discord\ext\commands\core.py", line 789, in prepare
-    await self._parse_arguments(ctx)
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\discord\ext\commands\core.py", line 697, in _parse_arguments
-    transformed = await self.transform(ctx, param)
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\discord\ext\commands\core.py", line 542, in transform
-    raise MissingRequiredArgument(param)
-discord.ext.commands.errors.MissingRequiredArgument: name is a required argument that is missing.
-
-During handling of the above exception, another exception occurred:
-
-Traceback (most recent call last):
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\discord\client.py", line 343, in _run_event
-    await coro(*args, **kwargs)
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\discord\ext\commands\bot.py", line 979, in on_message
-    await self.process_commands(message)
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\discord\ext\commands\bot.py", line 976, in process_commands
-    await self.invoke(ctx)
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\discord\ext\commands\bot.py", line 943, in invoke
-    await ctx.command.dispatch_error(ctx, exc)
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\discord\ext\commands\core.py", line 422, in dispatch_error
-    await injected(cog, ctx, error)
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\discord\ext\commands\core.py", line 71, in wrapped
-    ret = await coro(*args, **kwargs)
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\cogs\Registration.py", line 60, in register_error
-    self.check_instance(ctx)
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\cogs\Registration.py", line 37, in check_instance
-    raise RegChannelSetupError
-classes.Errors.RegChannelSetupError
-2021-11-15 20:36:10,198 ERROR -> in command: start
-Traceback (most recent call last):
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\discord\ext\commands\core.py", line 85, in wrapped
-    ret = await coro(*args, **kwargs)
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\cogs\Generation.py", line 88, in start
-    mes = self.bot.generator_instances[ctx.channel.id].start_tournament()
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\classes\Channels.py", line 74, in start_tournament
-    registrator_instance = self.bot.registrator_instances[self.reg_channel]
-AttributeError: 'GenChannel' object has no attribute 'reg_channel'
-
-
-2021-11-15 20:37:38,935 ERROR -> _ClientEventTask exception was never retrieved
-future: <ClientEventTask state=finished event=on_message coro=<bound method BotBase.on_message of <__main__.TournamentBOT object at 0x000001EA5D36A5B0>> exception=RegChannelSetupError()>
-Traceback (most recent call last):
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\discord\ext\commands\bot.py", line 939, in invoke
-    await ctx.command.invoke(ctx)
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\discord\ext\commands\core.py", line 855, in invoke
-    await self.prepare(ctx)
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\discord\ext\commands\core.py", line 789, in prepare
-    await self._parse_arguments(ctx)
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\discord\ext\commands\core.py", line 697, in _parse_arguments
-    transformed = await self.transform(ctx, param)
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\discord\ext\commands\core.py", line 542, in transform
-    raise MissingRequiredArgument(param)
-discord.ext.commands.errors.MissingRequiredArgument: name is a required argument that is missing.
-
-During handling of the above exception, another exception occurred:
-
-Traceback (most recent call last):
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\discord\client.py", line 343, in _run_event
-    await coro(*args, **kwargs)
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\discord\ext\commands\bot.py", line 979, in on_message
-    await self.process_commands(message)
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\discord\ext\commands\bot.py", line 976, in process_commands
-    await self.invoke(ctx)
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\discord\ext\commands\bot.py", line 943, in invoke
-    await ctx.command.dispatch_error(ctx, exc)
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\discord\ext\commands\core.py", line 422, in dispatch_error
-    await injected(cog, ctx, error)
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\discord\ext\commands\core.py", line 71, in wrapped
-    ret = await coro(*args, **kwargs)
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\cogs\Registration.py", line 60, in register_error
-    self.check_instance(ctx)
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\cogs\Registration.py", line 37, in check_instance
-    raise RegChannelSetupError
-classes.Errors.RegChannelSetupError
-2021-11-15 20:43:31,474 ERROR -> in command: open
-Traceback (most recent call last):
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\discord\ext\commands\core.py", line 467, in _actual_conversion
-    return converter(argument)
-ValueError: invalid literal for int() with base 10: '<#852053564188262420>'
-
-
-2021-11-15 20:45:27,490 ERROR -> in command: open
-Traceback (most recent call last):
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\discord\ext\commands\core.py", line 85, in wrapped
-    ret = await coro(*args, **kwargs)
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\cogs\Generation.py", line 67, in open
-    if not ctx.guild.get_channel(int(reg_channel_id)):
-ValueError: invalid literal for int() with base 10: '<#775253663059935263>'
-
-
-2021-11-15 20:55:33,541 ERROR -> in command: open
-Traceback (most recent call last):
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\discord\ext\commands\core.py", line 85, in wrapped
-    ret = await coro(*args, **kwargs)
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\cogs\Generation.py", line 58, in open
-    reg_channel_id = int(reg_channel_id.lstrip("<#").rstrip(">"))
-ValueError: invalid literal for int() with base 10: 'bot-testing'
-
-
-2021-11-15 21:03:51,014 ERROR -> in command: register
-Traceback (most recent call last):
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\discord\ext\commands\core.py", line 85, in wrapped
-    ret = await coro(*args, **kwargs)
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\cogs\Registration.py", line 54, in register
-    reaction, mes = self.bot.registrator_instances[ctx.channel.id].register_player(ctx.message.author.id, name, int(rating))
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\classes\Channels.py", line 22, in register_player
-    return self.registrator.add_registration(user_id, name, rating)
-TypeError: add_registration() takes 2 positional arguments but 4 were given
-
-
-2021-11-15 21:05:11,708 ERROR -> in command: register
-Traceback (most recent call last):
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\discord\ext\commands\core.py", line 85, in wrapped
-    ret = await coro(*args, **kwargs)
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\cogs\Registration.py", line 54, in register
-    reaction, mes = self.bot.registrator_instances[ctx.channel.id].register_player(ctx.message.author.id, name, int(rating))
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\classes\Channels.py", line 22, in register_player
-    return self.registrator.add_registration([user_id, name, rating])
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\classes\registrator.py", line 54, in add_registration
-    if self.registration_exists(player):
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\classes\registrator.py", line 92, in registration_exists
-    return self.reg_sheet.find(user_id, in_column=2)
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\gspread\models.py", line 1979, in find
-    return self._finder(finditem, query, in_row, in_column)
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\gspread\models.py", line 1940, in _finder
-    return func(match, cells)
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\gspread\utils.py", line 88, in finditem
-    return next((item for item in seq if func(item)))
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\gspread\utils.py", line 88, in <genexpr>
-    return next((item for item in seq if func(item)))
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\gspread\models.py", line 1938, in <lambda>
-    match = lambda x: query.search(x.value)
-AttributeError: 'int' object has no attribute 'search'
-
-
-2021-11-15 21:08:40,847 ERROR -> in command: register
-Traceback (most recent call last):
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\discord\ext\commands\core.py", line 85, in wrapped
-    ret = await coro(*args, **kwargs)
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\cogs\Registration.py", line 54, in register
-    reaction, mes = self.bot.registrator_instances[ctx.channel.id].register_player(ctx.message.author.id, name, int(rating))
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\classes\Channels.py", line 22, in register_player
-    return self.registrator.add_registration([user_id, name, rating])
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\classes\registrator.py", line 55, in add_registration
-    if self.registration_exists(player):
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\classes\registrator.py", line 93, in registration_exists
-    return self.reg_sheet.find(user_id, in_column=2)
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\gspread\models.py", line 1979, in find
-    return self._finder(finditem, query, in_row, in_column)
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\gspread\models.py", line 1940, in _finder
-    return func(match, cells)
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\gspread\utils.py", line 88, in finditem
-    return next((item for item in seq if func(item)))
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\gspread\utils.py", line 88, in <genexpr>
-    return next((item for item in seq if func(item)))
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\gspread\models.py", line 1938, in <lambda>
-    match = lambda x: query.search(x.value)
-AttributeError: 'int' object has no attribute 'search'
-
-
-2021-11-15 21:09:15,349 ERROR -> in command: open
-Traceback (most recent call last):
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\discord\ext\commands\core.py", line 85, in wrapped
-    ret = await coro(*args, **kwargs)
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\cogs\Generation.py", line 58, in open
-    reg_channel_id = int(reg_channel_id.lstrip("<#").rstrip(">"))
-ValueError: invalid literal for int() with base 10: 'bot-testing'
-
-
-2021-11-15 21:09:46,536 ERROR -> in command: register
-Traceback (most recent call last):
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\discord\ext\commands\core.py", line 85, in wrapped
-    ret = await coro(*args, **kwargs)
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\cogs\Registration.py", line 54, in register
-    reaction, mes = self.bot.registrator_instances[ctx.channel.id].register_player(ctx.message.author.id, name, int(rating))
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\classes\Channels.py", line 22, in register_player
-    return self.registrator.add_registration([user_id, name, rating])
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\classes\registrator.py", line 55, in add_registration
-    if self.registration_exists(player):
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\classes\registrator.py", line 94, in registration_exists
-    return self.reg_sheet.find(user_id, in_column=2)
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\gspread\models.py", line 1979, in find
-    return self._finder(finditem, query, in_row, in_column)
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\gspread\models.py", line 1940, in _finder
-    return func(match, cells)
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\gspread\utils.py", line 88, in finditem
-    return next((item for item in seq if func(item)))
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\gspread\utils.py", line 88, in <genexpr>
-    return next((item for item in seq if func(item)))
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\gspread\models.py", line 1938, in <lambda>
-    match = lambda x: query.search(x.value)
-AttributeError: 'int' object has no attribute 'search'
-
-
-2021-11-15 21:16:33,697 ERROR -> in command: open
-Traceback (most recent call last):
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\discord\ext\commands\core.py", line 85, in wrapped
-    ret = await coro(*args, **kwargs)
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\cogs\Generation.py", line 72, in open
-    self.bot.registrator_instances[reg_channel_id].setup(ctx.channel.id, sheets_id, self_rating)
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\classes\Channels.py", line 18, in setup
-    self.registrator = Registrator(sheets_id, use_rating=use_rating)
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\classes\registrator.py", line 28, in __init__
-    self.sheets.add_worksheet(title="Results", rows=100, cols=100)
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\gspread\models.py", line 418, in add_worksheet
-    data = self.batch_update(body)
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\gspread\models.py", line 170, in batch_update
-    r = self.client.request(
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\gspread\client.py", line 76, in request
-    raise APIError(response)
-gspread.exceptions.APIError: {'code': 400, 'message': 'Invalid requests[0].addSheet: A sheet with the name "Results" already exists. Please enter another name.', 'status': 'INVALID_ARGUMENT'}
-
-
-2021-11-15 22:32:38,725 ERROR -> in command: register
-Traceback (most recent call last):
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\urllib3\connectionpool.py", line 699, in urlopen
-    httplib_response = self._make_request(
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\urllib3\connectionpool.py", line 445, in _make_request
-    six.raise_from(e, None)
-  File "<string>", line 3, in raise_from
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\urllib3\connectionpool.py", line 440, in _make_request
-    httplib_response = conn.getresponse()
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\http\client.py", line 1345, in getresponse
-    response.begin()
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\http\client.py", line 307, in begin
-    version, status, reason = self._read_status()
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\http\client.py", line 268, in _read_status
-    line = str(self.fp.readline(_MAXLINE + 1), "iso-8859-1")
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\socket.py", line 704, in readinto
-    return self._sock.recv_into(b)
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\ssl.py", line 1241, in recv_into
-    return self.read(nbytes, buffer)
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\ssl.py", line 1099, in read
-    return self._sslobj.read(len, buffer)
-ConnectionResetError: [WinError 10054] An existing connection was forcibly closed by the remote host
-
-During handling of the above exception, another exception occurred:
-
-Traceback (most recent call last):
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\requests\adapters.py", line 439, in send
-    resp = conn.urlopen(
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\urllib3\connectionpool.py", line 755, in urlopen
-    retries = retries.increment(
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\urllib3\util\retry.py", line 532, in increment
-    raise six.reraise(type(error), error, _stacktrace)
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\urllib3\packages\six.py", line 734, in reraise
-    raise value.with_traceback(tb)
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\urllib3\connectionpool.py", line 699, in urlopen
-    httplib_response = self._make_request(
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\urllib3\connectionpool.py", line 445, in _make_request
-    six.raise_from(e, None)
-  File "<string>", line 3, in raise_from
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\urllib3\connectionpool.py", line 440, in _make_request
-    httplib_response = conn.getresponse()
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\http\client.py", line 1345, in getresponse
-    response.begin()
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\http\client.py", line 307, in begin
-    version, status, reason = self._read_status()
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\http\client.py", line 268, in _read_status
-    line = str(self.fp.readline(_MAXLINE + 1), "iso-8859-1")
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\socket.py", line 704, in readinto
-    return self._sock.recv_into(b)
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\ssl.py", line 1241, in recv_into
-    return self.read(nbytes, buffer)
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\ssl.py", line 1099, in read
-    return self._sslobj.read(len, buffer)
-urllib3.exceptions.ProtocolError: ('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))
-
-During handling of the above exception, another exception occurred:
-
-Traceback (most recent call last):
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\discord\ext\commands\core.py", line 85, in wrapped
-    ret = await coro(*args, **kwargs)
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\cogs\Registration.py", line 55, in register
-    reaction, mes = self.bot.registrator_instances[ctx.channel.id].register_player(ctx.message.author.id, name, rating)
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\classes\Channels.py", line 23, in register_player
-    def register_player(self, user_id: int, name: str, rating: int = None, force=False):
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\classes\registrator.py", line 56, in add_registration
-    if not force and self.registration_exists(player):
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\classes\registrator.py", line 94, in registration_exists
-    return self.reg_sheet.find(str(user_id), in_column=2)
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\gspread\models.py", line 1979, in find
-    return self._finder(finditem, query, in_row, in_column)
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\gspread\models.py", line 1926, in _finder
-    data = self.spreadsheet.values_get(absolute_range_name(self.title))
+  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\cogs\Generation.py", line 180, in nextround
+    mes, round, file_content = self.bot.generator_instances[ctx.channel.id].next_round()
+  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\classes\Channels.py", line 125, in next_round
+    registration_instance.update_round_results(self.generator.get_round_results())
+  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\classes\Channels.py", line 45, in update_round_results
+    self.registrator.add_round_results(results)
+  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\classes\registrator.py", line 91, in add_round_results
+    title_range, results_range = self.__get_next_results_range(len(results_data))
+  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\classes\registrator.py", line 111, in __get_next_results_range
+    sheet_vals = self.res_sheet.get_values(major_dimension='COLS')
+  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\gspread\utils.py", line 593, in wrapper
+    return f(*args, **kwargs)
+  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\gspread\models.py", line 857, in get_values
+    return fill_gaps(self.get(range_name, **kwargs))
+  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\gspread\utils.py", line 593, in wrapper
+    return f(*args, **kwargs)
+  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\gspread\models.py", line 1136, in get
+    response = self.spreadsheet.values_get(range_name, params=params)
   File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\gspread\models.py", line 221, in values_get
     r = self.client.request('get', url, params=params)
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\gspread\client.py", line 64, in request
-    response = getattr(self.session, method)(
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\requests\sessions.py", line 555, in get
-    return self.request('GET', url, **kwargs)
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\google\auth\transport\requests.py", line 480, in request
-    response = super(AuthorizedSession, self).request(
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\requests\sessions.py", line 542, in request
-    resp = self.send(prep, **send_kwargs)
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\requests\sessions.py", line 655, in send
-    r = adapter.send(request, **kwargs)
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\requests\adapters.py", line 498, in send
-    raise ConnectionError(err, request=request)
-requests.exceptions.ConnectionError: ('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))
+  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\gspread\client.py", line 76, in request
+    raise APIError(response)
+gspread.exceptions.APIError: {'code': 400, 'message': 'Invalid value at \'major_dimension\' (type.googleapis.com/google.apps.sheets.v4.Dimension), "COLS"', 'status': 'INVALID_ARGUMENT', 'details': [{'@type': 'type.googleapis.com/google.rpc.BadRequest', 'fieldViolations': [{'field': 'major_dimension', 'description': 'Invalid value at \'major_dimension\' (type.googleapis.com/google.apps.sheets.v4.Dimension), "COLS"'}]}]}
 
 
-2021-11-15 22:40:49,212 ERROR -> _ClientEventTask exception was never retrieved
-future: <ClientEventTask state=finished event=on_message coro=<bound method BotBase.on_message of <__main__.TournamentBOT object at 0x000001ADC1CA34C0>> exception=RegChannelSetupError()>
+2021-11-17 23:52:35,089 ERROR -> in command: nextround
+Traceback (most recent call last):
+  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\discord\ext\commands\core.py", line 85, in wrapped
+    ret = await coro(*args, **kwargs)
+  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\cogs\Generation.py", line 180, in nextround
+    mes, round, file_content = self.bot.generator_instances[ctx.channel.id].next_round()
+  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\classes\Channels.py", line 125, in next_round
+    registration_instance.update_round_results(self.generator.get_round_results())
+  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\classes\generator.py", line 220, in get_round_results
+    round_data = self.__round_results(round)
+  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\classes\generator.py", line 227, in __round_results
+    for match in self.round_groupings[round]:
+IndexError: list index out of range
+
+
+2021-11-18 00:03:44,864 ERROR -> _ClientEventTask exception was never retrieved
+future: <ClientEventTask state=finished event=on_message coro=<bound method BotBase.on_message of <__main__.TournamentBOT object at 0x0000018CFA7E1A60>> exception=RegChannelSetupError()>
 Traceback (most recent call last):
   File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\discord\client.py", line 343, in _run_event
     await coro(*args, **kwargs)
@@ -398,172 +92,111 @@ Traceback (most recent call last):
   File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\cogs\Registration.py", line 38, in check_instance
     raise RegChannelSetupError
 classes.Errors.RegChannelSetupError
-2021-11-15 22:51:41,603 ERROR -> in command: start
-Traceback (most recent call last):
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\discord\ext\commands\core.py", line 85, in wrapped
-    ret = await coro(*args, **kwargs)
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\cogs\Generation.py", line 111, in start
-    if await self.check_callable(ctx, "start"): return
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\cogs\Generation.py", line 48, in check_callable
-    reg_open = self.bot.registrator_instances[self.bot.generator_instances[ctx.channel.id].reg_channel].open
-KeyError: None
-
-
-2021-11-15 22:55:55,145 ERROR -> in command: start
-Traceback (most recent call last):
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\discord\ext\commands\core.py", line 85, in wrapped
-    ret = await coro(*args, **kwargs)
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\cogs\Generation.py", line 116, in start
-    mes = self.bot.generator_instances[ctx.channel.id].start_tournament()
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\classes\Channels.py", line 81, in start_tournament
-    player_list = registrator_instance.load_registrations()
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\classes\Channels.py", line 37, in load_registrations
-    return self.registrator.load_registrations()
-AttributeError: 'Registrator' object has no attribute 'load_registrations'
-
-
-2021-11-15 23:04:48,822 ERROR -> in command: start
-Traceback (most recent call last):
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\discord\ext\commands\core.py", line 85, in wrapped
-    ret = await coro(*args, **kwargs)
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\cogs\Generation.py", line 116, in start
-    mes = self.bot.generator_instances[ctx.channel.id].start_tournament()
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\classes\Channels.py", line 86, in start_tournament
-    ret =  self.generator.start()
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\classes\generator.py", line 41, in start
-    return self.generate_round(self.remaining_players)
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\classes\generator.py", line 105, in generate_round
-    next_round_matches = self.seeded_generation()
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\classes\generator.py", line 124, in seeded_generation
-    remaining_front = sorted(self.remaining_players, key=lambda player: player.getRating(), reverse=True)
-TypeError: '<' not supported between instances of 'int' and 'str'
-
-
-2021-11-16 18:35:37,159 ERROR -> in command: start
-Traceback (most recent call last):
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\discord\ext\commands\core.py", line 85, in wrapped
-    ret = await coro(*args, **kwargs)
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\cogs\Generation.py", line 120, in start
-    mes = self.bot.generator_instances[ctx.channel.id].start_tournament()
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\classes\Channels.py", line 88, in start_tournament
-    ret = self.generator.start()
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\classes\generator.py", line 42, in start
-    return "Tournament started. Preliminary Round generation complete.", self.matchups_to_str(self.generate_prelim())
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\classes\generator.py", line 186, in matchups_to_str
-    ret+=f"Match {i+1}: {discord_utils.disc_clean(match[0])} {{A}} vs. {discord_utils.disc_clean(match[1])} {{DA}}\n"
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\utils\discord_utils.py", line 48, in disc_clean
-    return msg.replace("*", "\*").replace("`",'\`').replace("_", "\_").replace("~~", "\~~")
-AttributeError: 'list' object has no attribute 'replace'
-
-
-2021-11-16 18:37:07,748 ERROR -> in command: start
-Traceback (most recent call last):
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\discord\ext\commands\core.py", line 85, in wrapped
-    ret = await coro(*args, **kwargs)
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\cogs\Generation.py", line 120, in start
-    mes = self.bot.generator_instances[ctx.channel.id].start_tournament()
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\classes\Channels.py", line 88, in start_tournament
-    ret = self.generator.start()
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\classes\generator.py", line 42, in start
-    return "Tournament started. Preliminary Round generation complete.", self.matchups_to_str(self.generate_prelim())
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\classes\generator.py", line 186, in matchups_to_str
-    ret+=f"Match {i+1}: {discord_utils.disc_clean(match[0].__str__)} {{A}} vs. {discord_utils.disc_clean(match[1].__str__)} {{DA}}\n"
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\utils\discord_utils.py", line 48, in disc_clean
-    return msg.replace("*", "\*").replace("`",'\`').replace("_", "\_").replace("~~", "\~~")
-AttributeError: 'method-wrapper' object has no attribute 'replace'
-
-
-2021-11-16 18:39:21,608 ERROR -> in command: start
-Traceback (most recent call last):
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\discord\ext\commands\core.py", line 85, in wrapped
-    ret = await coro(*args, **kwargs)
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\cogs\Generation.py", line 120, in start
-    mes = self.bot.generator_instances[ctx.channel.id].start_tournament()
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\classes\Channels.py", line 88, in start_tournament
-    ret = self.generator.start()
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\classes\generator.py", line 42, in start
-    return "Tournament started. Preliminary Round generation complete.", self.matchups_to_str(self.generate_prelim())
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\classes\generator.py", line 186, in matchups_to_str
-    ret+=f"Match {i+1}: {discord_utils.disc_clean(match[0].get_full_display())} {{A}} vs. {discord_utils.disc_clean(match[1].get_full_display())} {{DA}}\n"
-AttributeError: 'list' object has no attribute 'get_full_display'
-
-
-2021-11-16 18:51:58,671 ERROR -> in command: start
-Traceback (most recent call last):
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\discord\ext\commands\core.py", line 85, in wrapped
-    ret = await coro(*args, **kwargs)
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\cogs\Generation.py", line 123, in start
-    r_file = discord_utils.create_temp_file(dir+filename, file_content)
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\utils\discord_utils.py", line 36, in create_temp_file
-    with open(dir+filename, 'w', encoding='utf-8') as e_file:
-FileNotFoundError: [Errno 2] No such file or directory: '../temp_files/round_<built-in function round>_matchups-775253663059935263'
-
-
-2021-11-16 18:53:37,175 ERROR -> in command: start
-Traceback (most recent call last):
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\discord\ext\commands\core.py", line 85, in wrapped
-    ret = await coro(*args, **kwargs)
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\cogs\Generation.py", line 123, in start
-    r_file = discord_utils.create_temp_file(dir+filename, file_content)
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\utils\discord_utils.py", line 36, in create_temp_file
-    with open(dir+filename, 'w', encoding='utf-8') as e_file:
-FileNotFoundError: [Errno 2] No such file or directory: '../temp_files/round_prelim_matchups-775253663059935263'
-
-
-2021-11-16 18:54:53,012 ERROR -> in command: start
-Traceback (most recent call last):
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\discord\ext\commands\core.py", line 85, in wrapped
-    ret = await coro(*args, **kwargs)
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\cogs\Generation.py", line 123, in start
-    r_file = discord_utils.create_temp_file(filename, file_content, dir=dir)
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\utils\discord_utils.py", line 36, in create_temp_file
-    with open(dir+filename, 'w', encoding='utf-8') as e_file:
-FileNotFoundError: [Errno 2] No such file or directory: '/temp_files/round_prelim_matchups-775253663059935263'
-
-
-2021-11-16 18:56:48,932 ERROR -> in command: start
-Traceback (most recent call last):
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\discord\ext\commands\core.py", line 85, in wrapped
-    ret = await coro(*args, **kwargs)
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\cogs\Generation.py", line 123, in start
-    r_file = discord_utils.create_temp_file(filename, file_content, dir=dir)
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\utils\discord_utils.py", line 36, in create_temp_file
-    with open(dir+filename, 'w', encoding='utf-8') as e_file:
-FileNotFoundError: [Errno 2] No such file or directory: '/temp_files/round_prelim_matchups-775253663059935263.txt'
-
-
-2021-11-16 22:40:01,105 ERROR -> in command: advance
-Traceback (most recent call last):
-  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\discord\ext\commands\core.py", line 85, in wrapped
-    ret = await coro(*args, **kwargs)
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\cogs\Generation.py", line 139, in advance
-    mes = self.bot.generator_instances[ctx.channel.id].advance_players(players)
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\classes\Channels.py", line 97, in advance_players
-    return self.generator.advance(players)
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\classes\generator.py", line 76, in advance
-    return f"{len(advanced)} players advanced. {len(self.round_advancements[-1])}/{len(self.get_current_groupings)} players advanced for {'preliminary round' if self.round==0 else f'round {self.round}'}."
-TypeError: object of type 'method' has no len()
-
-
-2021-11-16 22:52:16,837 ERROR -> in command: nextround
+2021-11-18 00:04:12,423 ERROR -> in command: nextround
 Traceback (most recent call last):
   File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\discord\ext\commands\core.py", line 85, in wrapped
     ret = await coro(*args, **kwargs)
   File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\cogs\Generation.py", line 180, in nextround
     mes, round, file_content = self.bot.generator_instances[ctx.channel.id].next_round()
-ValueError: too many values to unpack (expected 3)
+  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\classes\Channels.py", line 125, in next_round
+    registration_instance.update_round_results(self.generator.get_round_results())
+  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\classes\generator.py", line 190, in get_round_results
+    if round == -1: round == list(self.round_advancements.keys())[-1] #get last round's results
+IndexError: list index out of range
 
 
-2021-11-16 22:56:38,715 ERROR -> in command: finish
+2021-11-18 00:09:43,411 ERROR -> in command: nextround
 Traceback (most recent call last):
   File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\discord\ext\commands\core.py", line 85, in wrapped
     ret = await coro(*args, **kwargs)
-  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\cogs\Generation.py", line 219, in finish
-    gen_instance.end_tournament()
-AttributeError: 'GenChannel' object has no attribute 'end_tournament'
+  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\cogs\Generation.py", line 180, in nextround
+    mes, round, file_content = self.bot.generator_instances[ctx.channel.id].next_round()
+  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\classes\Channels.py", line 125, in next_round
+    registration_instance.update_round_results(self.generator.get_round_results())
+  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\classes\generator.py", line 186, in get_round_results
+    if round == -1: round = list(self.round_advancements.keys())[-1] #get last round's results
+IndexError: list index out of range
 
 
-2021-11-16 22:56:53,180 ERROR -> in command: finish
+2021-11-18 00:11:52,672 ERROR -> _ClientEventTask exception was never retrieved
+future: <ClientEventTask state=finished event=on_message coro=<bound method BotBase.on_message of <__main__.TournamentBOT object at 0x0000025908851A30>> exception=RegChannelSetupError()>
+Traceback (most recent call last):
+  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\discord\client.py", line 343, in _run_event
+    await coro(*args, **kwargs)
+  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\discord\ext\commands\bot.py", line 979, in on_message
+    await self.process_commands(message)
+  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\discord\ext\commands\bot.py", line 976, in process_commands
+    await self.invoke(ctx)
+  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\discord\ext\commands\bot.py", line 939, in invoke
+    await ctx.command.invoke(ctx)
+  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\discord\ext\commands\core.py", line 855, in invoke
+    await self.prepare(ctx)
+  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\discord\ext\commands\core.py", line 791, in prepare
+    await self.call_before_hooks(ctx)
+  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\discord\ext\commands\core.py", line 739, in call_before_hooks
+    await hook(ctx)
+  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\cogs\Registration.py", line 41, in cog_before_invoke
+    self.check_instance(ctx)
+  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\cogs\Registration.py", line 38, in check_instance
+    raise RegChannelSetupError
+classes.Errors.RegChannelSetupError
+2021-11-18 00:12:16,933 ERROR -> in command: nextround
+Traceback (most recent call last):
+  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\discord\ext\commands\core.py", line 85, in wrapped
+    ret = await coro(*args, **kwargs)
+  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\cogs\Generation.py", line 180, in nextround
+    mes, round, file_content = self.bot.generator_instances[ctx.channel.id].next_round()
+  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\classes\Channels.py", line 125, in next_round
+    registration_instance.update_round_results(self.generator.get_round_results())
+  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\classes\generator.py", line 187, in get_round_results
+    if round == -1: round = list(self.round_advancements.keys())[-1] #get last round's results
+IndexError: list index out of range
+
+
+2021-11-18 00:14:22,739 ERROR -> in command: nextround
+Traceback (most recent call last):
+  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\discord\ext\commands\core.py", line 85, in wrapped
+    ret = await coro(*args, **kwargs)
+  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\cogs\Generation.py", line 180, in nextround
+    mes, round, file_content = self.bot.generator_instances[ctx.channel.id].next_round()
+  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\classes\Channels.py", line 126, in next_round
+    registration_instance.update_round_results(self.generator.get_round_results())
+  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\classes\Channels.py", line 45, in update_round_results
+    self.registrator.add_round_results(results)
+  File "c:\Users\ryanz\OneDrive\Desktop\python projects\tournament-generator\tournament-generator\classes\registrator.py", line 97, in add_round_results
+    self.res_sheet.update(results_range, results_data)
+  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\gspread\utils.py", line 593, in wrapper
+    return f(*args, **kwargs)
+  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\gspread\models.py", line 1276, in update
+    response = self.spreadsheet.values_update(
+  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\gspread\models.py", line 265, in values_update
+    r = self.client.request('put', url, params=params, json=body)
+  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\gspread\client.py", line 64, in request
+    response = getattr(self.session, method)(
+  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\requests\sessions.py", line 602, in put
+    return self.request('PUT', url, data=data, **kwargs)
+  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\google\auth\transport\requests.py", line 480, in request
+    response = super(AuthorizedSession, self).request(
+  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\requests\sessions.py", line 528, in request
+    prep = self.prepare_request(req)
+  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\requests\sessions.py", line 456, in prepare_request
+    p.prepare(
+  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\requests\models.py", line 319, in prepare
+    self.prepare_body(data, files, json)
+  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\requests\models.py", line 469, in prepare_body
+    body = complexjson.dumps(json)
+  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\json\__init__.py", line 231, in dumps
+    return _default_encoder.encode(obj)
+  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\json\encoder.py", line 199, in encode
+    chunks = self.iterencode(o, _one_shot=True)
+  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\json\encoder.py", line 257, in iterencode
+    return _iterencode(o, 0)
+  File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\json\encoder.py", line 179, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+TypeError: Object of type Player is not JSON serializable
+
+
+2021-11-18 00:26:51,936 ERROR -> in command: finish
 Traceback (most recent call last):
   File "C:\Users\ryanz\AppData\Local\Programs\Python\Python39\lib\site-packages\discord\ext\commands\core.py", line 85, in wrapped
     ret = await coro(*args, **kwargs)

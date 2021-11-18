@@ -1,7 +1,7 @@
 import os
 from typing import List
 # import pandas as pd
-import gspread
+import gspread, gspread.utils
 
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets", 'https://spreadsheets.google.com/feeds']
 GC = None
@@ -43,8 +43,6 @@ class Registrator:
         self.reg_sheet.format("A1:D1", {'textFormat': {'bold': True}})
 
         self.res_sheet.clear()
-        self.res_sheet.update("A2:C2", [['Match', 'Winner', 'Loser']])
-        self.res_sheet.format("A2:C2", {'textFormat': {'bold': True}})
 
     def add_registration(self, player: list, force: bool = False):
         '''
@@ -57,7 +55,7 @@ class Registrator:
         if not force and self.registration_exists(player):
             return "❌", "You are already registered for this tournament."
 
-        row_num = self.__get_next_available_row(self.reg_sheet)
+        row_num = self.__get_next_row(self.reg_sheet)
         range = f"A{row_num}:D{row_num}"
         player = self.reformat_player(player, row_num-1)
         self.reg_sheet.update(range, player)
@@ -79,23 +77,52 @@ class Registrator:
         '''
         Return all player registrations from registration sheet as a list of lists.
         '''
-        last_row = self.__get_next_available_row(self.reg_sheet)-1
+        last_row = self.__get_next_row(self.reg_sheet)-1
         range = f"A2:D{last_row}"
         return self.reg_sheet.get_values(range)
     
-    def add_round_results(self, results: List[List[str]]):
+    def add_round_results(self, results: list):
         '''
         Add a round's results to the results sheet.
         '''
-        pass
+        round_title = results[0]
+        results_data = results[1]
+
+        title_range, results_range = self.__get_next_results_range(len(results_data))
+        title_values = [[round_title], ["Match", "Winner", "Loser"]]
+
+        self.res_sheet.update(title_range, title_values)
+        self.res_sheet.format(title_range, {'textFormat': {'bold': True}})
+
+        self.res_sheet.update(results_range, results_data)
     
     @staticmethod
-    def __get_next_available_row(sheet: gspread.Worksheet):
+    def __get_next_row(sheet: gspread.Worksheet):
         '''
-        Find the next available row to insert a player registration.
+        Find the next available row to insert a row.
         '''
         sheet_vals = sheet.get_values()
         return len(sheet_vals)+1
+    
+    def __get_next_results_range(self, num_entries: int):
+        '''
+        Find the next available range to insert a round's results.
+        '''
+        sheet_vals = self.res_sheet.get_values(major_dimension='COLUMNS')
+        start_col = len(sheet_vals)+2
+        end_col = start_col+3
+        start_row = 1
+        end_row = start_row+2+num_entries
+        range_start = gspread.utils.rowcol_to_a1(start_row+2, start_col)
+        range_end = gspread.utils.rowcol_to_a1(end_row, end_col)
+        title_start = gspread.utils.rowcol_to_a1(start_row, start_col)
+        title_end = gspread.utils.rowcol_to_a1(start_row+1, end_col)
+
+        title_range = f"{title_start}:{title_end}"
+        results_range = f"{range_start}:{range_end}"
+
+        return title_range, results_range
+
     
     @staticmethod
     def reformat_player(player: list, num):

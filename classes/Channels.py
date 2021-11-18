@@ -38,6 +38,12 @@ class RegChannel:
         '''
         return self.registrator.load_registrations()
     
+    def update_round_results(self, results):
+        '''
+        Updates the results sheet with a round's results.
+        '''
+        self.registrator.add_round_results(results)
+    
     def cleanup_reg(self):
         self.registrator.reg_sheet = None
     
@@ -85,7 +91,7 @@ class GenChannel:
     def start_tournament(self):
         registrator_instance = self.bot.registrator_instances[self.reg_channel]
         player_list = registrator_instance.load_registrations()
-        player_list = list(map(lambda l: Player(int(l[0]), None if l[3].lower()=="none" else int(l[1]), l[2], None if l[3].lower()=="none" else int(l[3])), player_list)) # convert lists into player objects
+        player_list = list(map(lambda l: Player(int(l[0]), None if l[1].lower()=="none" else int(l[1]), l[2], None if l[3].lower()=="none" else int(l[3])), player_list)) # convert lists into player objects
 
         self.generator = Generator(player_list, is_open=self.open, random=self.random)
         ret = self.generator.start()
@@ -108,7 +114,10 @@ class GenChannel:
             return "You cannot have more than one winner."
 
         self.last_active = datetime.datetime.now()   
-        return self.generator.determine_winner(players)
+        ret = self.generator.determine_winner(players)
+        registration_instance = self.bot.registrator_instances[self.reg_channel]
+        registration_instance.update_round_results(self.generator.get_round_results())
+        return ret
     
     def next_round(self):
         round_finished, status_str = self.generator.round_finished()
@@ -116,8 +125,12 @@ class GenChannel:
             return "The current round is still in progress. " + status_str, None, None
         
         registration_instance = self.bot.registrator_instances[self.reg_channel]
+        ret = self.generator.next_round()
         registration_instance.update_round_results(self.generator.get_round_results())
-        return self.generator.next_round()
+        return ret
+    
+    def end_tournament(self):
+        return
 
     def is_active(self):
         return self.active
@@ -127,6 +140,9 @@ class GenChannel:
     
     def is_finished(self):
         return self.generator.winner is not None
+    
+    def get_winner(self):
+        return self.generator.winner
 
     def get_ctx(self):
         return self.ctx

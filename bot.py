@@ -69,7 +69,7 @@ class TournamentBOT(commands.Bot):
     def __init__(self):
         super().__init__(command_prefix = callable_prefix , case_insensitive = True, intents = discord.Intents.all(), help_command = None)
         self.BOT_ID = 907717733582532659
-        self.presences = cycle([';help', "{} active tournaments"])
+        self.presences = cycle([',help', "{} active tournaments"])
         # self.prefixes, self.settings = fetch_prefixes_and_settings()
         self.generator_instances: Dict[int, Channels.GenChannel] = dict() #gen_channel_id: GenChannel instance
         self.registrator_instances: Dict[int, Channels.RegChannel] = dict() #reg_channel_id: RegChannel instance

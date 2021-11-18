@@ -217,7 +217,7 @@ class Generation(commands.Cog):
 
         if gen_instance.is_finished():
             gen_instance.end_tournament()
-            await ctx.send(f"Tournament has been ended. Congratulations to the winner, {gen_instance.get_winner()}!")
+            await ctx.send(f"Tournament has been ended. Congratulations to the winner: {gen_instance.get_winner().get_displayName()}!")
         else:
             await ctx.send(f"Tournament has been reset. Do `{ctx.prefix}open` to open a new tournament.")
         self.bot.generator_instances.pop(ctx.channel.id)
