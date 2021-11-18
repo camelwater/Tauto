@@ -61,6 +61,11 @@ class Generation(commands.Cog):
             return True
 
         return False
+    
+    async def send_file(self, ctx: commands.Context, file_content, dir, filename):
+        r_file = discord_utils.create_temp_file(filename, file_content, dir=dir)
+        discord_utils.delete_file(dir+filename)
+        await ctx.send(file = discord.File(fp=r_file, filename=filename))
 
     @commands.command(aliases=['o', 'openreg', 'openregistration'])
     @commands.has_permissions(administrator=True)
@@ -119,11 +124,9 @@ class Generation(commands.Cog):
 
         mes, round, file_content = self.bot.generator_instances[ctx.channel.id].start_tournament()
         dir = './temp_files/'
-        filename = f"round_{round}_matchups-{ctx.channel.id}.txt"
-        r_file = discord_utils.create_temp_file(filename, file_content, dir=dir)
-        discord_utils.delete_file(dir+filename)
+        filename = f"{round.replace(' ', '_').lower()}_matchups-{ctx.channel.id}.txt"
         await ctx.send(mes)
-        await ctx.send(file = discord.File(fp=r_file, filename=filename))
+        await self.send_file(ctx, file_content, dir, filename)
     
     @commands.command(aliases=['a', 'adv'])
     @commands.has_permissions(administrator=True)
@@ -181,11 +184,9 @@ class Generation(commands.Cog):
         if file_content is None:
             return await ctx.send(mes)
         dir = './temp_files/'
-        filename = f"round_{round}_matchups-{ctx.channel.id}.txt"
-        r_file = discord_utils.create_temp_file(filename, file_content, dir=dir)
-        discord_utils.delete_file(dir+filename)
+        filename = f"{round.replace(' ', '_').lower()}_matchups-{ctx.channel.id}.txt"
         await ctx.send(mes)
-        await ctx.send(file = discord.File(fp=r_file, filename=filename))
+        await self.send_file(ctx, file_content, dir, filename)
     
     @commands.command(aliases=['rs', 'roundstatus'])
     @commands.has_permissions(administrator=True)
@@ -196,6 +197,17 @@ class Generation(commands.Cog):
 
         if await self.check_callable(ctx, "status"): return
 
+        mes, round, file_content = self.bot.generator_instances[ctx.channel.id].round_status()
+
+        if file_content is None:
+            return await ctx.send(mes)
+
+        dir = './temp_files/'
+        filename = f"{round.replace(' ', '_').lower()}_status-{ctx.channel.id}.txt"
+        await ctx.send(mes)
+        await self.send_file(ctx, file_content, dir, filename)
+
+
     @commands.command(aliases=['rr', 'roundresults', 'res'])
     @commands.has_permissions(administrator=True)
     async def results(self, ctx: commands.Context, round = -1):
@@ -203,6 +215,13 @@ class Generation(commands.Cog):
         Get the results of a specific round (all matchups and winners of each matchup).
         '''
         if await self.check_callable(ctx, "results"): return
+
+        mes, file_content = self.bot.generator_instances[ctx.channel.id].round_results(round)
+        if file_content is None:
+            return await ctx.send(mes)
+        dir = './temp_files/'
+        filename = f"{mes.replace(' ', '_').lower()}_results-{ctx.channel.id}.txt"
+        await self.send_file(ctx, file_content, dir, filename)
 
     @commands.command(aliases=['stop', 'done', 'reset', 'endtournament', 'clear'])
     @commands.has_permissions(administrator=True)

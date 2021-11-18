@@ -120,14 +120,20 @@ class GenChannel:
         return ret
     
     def next_round(self):
-        round_finished, status_str = self.generator.round_finished()
+        round_finished, round, status_str, cur_round_status = self.generator.round_finished()
         if not round_finished:
-            return "The current round is still in progress. " + status_str, None, None
+            return f"The current round ({round}) is still in progress. " + status_str, round, cur_round_status
         
         registration_instance = self.bot.registrator_instances[self.reg_channel]
         ret = self.generator.next_round()
         registration_instance.update_round_results(self.generator.get_round_results())
         return ret
+    
+    def round_results(self, round):
+        return self.generator.get_round_results(round)
+    
+    def round_status(self):
+        return self.generator.current_round_status()
     
     def end_tournament(self):
         return
