@@ -31,7 +31,8 @@ jobs:
           name: "credentials.json"
           json: ${{ secrets.GC_CREDENTIALS_JSON }}
           dir: "resources/"
-
+      
+      # Step 6
       - name: Run bot test
         run: timeout --preserve-status 5 python bot.py ${{ secrets.BOT_SECRET_KEY }}
       
