@@ -32,6 +32,8 @@ class Registrator:
             self.res_sheet = sheets.worksheet("Results")
         except:
             self.res_sheet = sheets.add_worksheet(title="Results", rows=100, cols=100)
+        
+        self.format_sheets()
 
 
     def format_sheets(self):
@@ -48,9 +50,9 @@ class Registrator:
         '''
         Add a player registration row to the registration sheet.
         '''
-        if not self.formatted:
-            self.format_sheets()
-            self.formatted = True
+        # if not self.formatted:
+        #     self.format_sheets()
+        #     self.formatted = True
 
         if not force and self.registration_exists(player):
             return "❌", "You are already registered for this tournament."

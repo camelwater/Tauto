@@ -79,8 +79,8 @@ class TournamentBOT(commands.Bot):
 
     async def on_command_error(self, ctx: commands.Context, error):
         if isinstance(error, commands.CommandNotFound):
-            if not ctx.guild:
-                await(await ctx.send(f"I don't recognize that command. Use `{ctx.prefix}help` for a list of available commands.")).delete(delay=25)
+            # if not ctx.guild:
+            #     await(await ctx.send(f"I don't recognize that command. Use `{ctx.prefix}help` for a list of available commands.")).delete(delay=25)
             pass
         elif isinstance(error, commands.NoPrivateMessage):
             await(await ctx.send("This command cannot be used in DMs.")).delete(delay=7)
@@ -99,10 +99,15 @@ class TournamentBOT(commands.Bot):
             await ctx.send("I am missing these required permissions:" + ", ".join(error.missing_perms))
         elif isinstance(error, Errors.RegChannelSetupError):
             await ctx.send(f"You have not set up this channel to be a registration channel. If you'd like to set this channel as a registration channel, use `{ctx.prefix}open`.", delete_after=7)
-        elif isinstance(error, gspread.exceptions.APIError):
-            await ctx.send(f"There was an error with the Google API. Try again later.")
+        elif isinstance(error, commands.CommandInvokeError):
+            original_err = error.original
+            
+            if isinstance(original_err, gspread.exceptions.APIError):
+                await ctx.send("An unidentified error with the Google API occurred. Try again later.")
+            
+            raise error
         else:
-            await ctx.send(f"An unidentified internal bot error occurred. Wait a bit and try again later.\nIf this issue persists, `{ctx.prefix}reset` the table.")
+            await ctx.send(f"An unidentified internal bot error occurred. Wait a bit and try again later.\nIf this issue persists, `{ctx.prefix}reset` the tournament.")
             error_tb = ''.join(tb.format_exception(type(error), error, error.__traceback__))
             error_tb = error_tb[:error_tb.find('\nThe above exception was the direct cause of the following exception:')]
             log.error(msg=f"in command: {ctx.command}\n{error_tb}")

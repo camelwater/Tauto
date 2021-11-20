@@ -15,11 +15,11 @@ class RegChannel:
         self.registrator = None
         self.open = None
 
-    def setup(self, gen_channel_id, sheets_id, use_rating):
+    def setup(self, gen_channel_id, sheets_id, use_rating, registrator=None):
         self.gen_channel = gen_channel_id
         self.sheets_id = sheets_id
         self.use_rating = use_rating
-        self.registrator = Registrator(sheets_id, use_rating=use_rating)
+        self.registrator = registrator if registrator else Registrator(sheets_id, use_rating=use_rating)
         self.open = True
     
     def register_player(self, user_id: int, name: str, rating: int = None, force=False):
@@ -75,6 +75,7 @@ class GenChannel:
         self.active = False
         self.last_active = None
         self.reg_channel = None
+        self.skip_reg = False
 
         self.generator = generator
 
@@ -85,18 +86,34 @@ class GenChannel:
         self.open = is_open
         self.random = is_random
     
+    def skip_reg_setup(self, sheets_id, self_rating, is_open, is_random):
+        self.reg_channel = 0
+        self.skip_reg = True
+        self.use_rating = self_rating
+        self.sheets_id = sheets_id
+        self.open = is_open
+        self.random = is_random
+    
     def set_gen(self, generator):
         self.generator = generator
     
     def start_tournament(self):
-        registrator_instance = self.bot.registrator_instances[self.reg_channel]
-        player_list = registrator_instance.load_registrations()
-        player_list = list(map(lambda l: Player(int(l[0]), None if l[1].lower()=="none" else int(l[1]), l[2], None if l[3].lower()=="none" else int(l[3])), player_list)) # convert lists into player objects
+        if self.skip_reg:
+            self.reg_instance = RegChannel(self.bot, self.ctx)
+            self.reg_instance.setup(0, self.sheets_id, self.use_rating)
+            player_list = self.reg_instance.load_registrations()
+            player_list = list(map(lambda l: Player(int(l[0]), None if l[1].lower()=="none" else int(l[1]), l[2], None if l[3].lower()=="none" else int(l[3])), player_list)) # convert lists into player objects
+
+        else:
+            registrator_instance = self.bot.registrator_instances[self.reg_channel]
+            player_list = registrator_instance.load_registrations()
+            player_list = list(map(lambda l: Player(int(l[0]), None if l[1].lower()=="none" else int(l[1]), l[2], None if l[3].lower()=="none" else int(l[3])), player_list)) # convert lists into player objects
+            # self.bot.registrator_instances.pop(self.reg_channel) #remove registrator instance now that we are done using it
+            registrator_instance.cleanup_reg()
 
         self.generator = Generator(player_list, is_open=self.open, random=self.random)
         ret = self.generator.start()
-        # self.bot.registrator_instances.pop(self.reg_channel) #remove registrator instance now that we are done using it
-        registrator_instance.cleanup_reg()
+        
         self.active = True
         return ret
     
@@ -115,7 +132,7 @@ class GenChannel:
 
         self.last_active = datetime.datetime.now()   
         ret = self.generator.determine_winner(players)
-        registration_instance = self.bot.registrator_instances[self.reg_channel]
+        registration_instance = self.bot.registrator_instances[self.reg_channel] if not self.skip_reg else self.reg_instance
         registration_instance.update_round_results(self.generator.get_round_results())
         return ret
     
@@ -124,7 +141,7 @@ class GenChannel:
         if not round_finished:
             return f"The current round ({round}) is still in progress. " + status_str, round, cur_round_status
         
-        registration_instance = self.bot.registrator_instances[self.reg_channel]
+        registration_instance = self.bot.registrator_instances[self.reg_channel] if not self.skip_reg else self.reg_instance
         ret = self.generator.next_round()
         registration_instance.update_round_results(self.generator.get_round_results())
         return ret
@@ -143,6 +160,11 @@ class GenChannel:
     
     def is_open(self):
         return self.reg_channel is not None
+    
+    def reg_open(self):
+        if self.skip_reg:
+            return False
+        return self.bot.registrator_instances[self.reg_channel].open
     
     def is_finished(self):
         return self.generator.winner is not None

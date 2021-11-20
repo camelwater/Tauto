@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+import gspread
 from classes.generator import Generator
 from classes.Channels import RegChannel, GenChannel
 from classes.registrator import Registrator
@@ -45,11 +46,12 @@ class Generation(commands.Cog):
         self.set_instance(ctx)
     
     async def check_callable(self, ctx: commands.Context, command):
-        if command in ['start']:
-            if not self.bot.generator_instances[ctx.channel.id].reg_channel:
-                await ctx.send(f"You need to have an open tournament and have finished player registrations before using `{ctx.prefix}{command}.`")
+        if command=='start':
+            if self.bot.generator_instances[ctx.channel.id].reg_channel is None:
+                await ctx.send(f"You need to have an open tournament and have finished player registrations before using `{ctx.prefix}{command}`.")
                 return True
-            reg_open = self.bot.registrator_instances[self.bot.generator_instances[ctx.channel.id].reg_channel].open
+            # reg_open = self.bot.registrator_instances[self.bot.generator_instances[ctx.channel.id].reg_channel].open
+            reg_open = self.bot.generator_instances[ctx.channel.id].reg_open()
             if reg_open is None or reg_open is True:
                 await ctx.send(f"You need to finish player registrations before using `{ctx.prefix}{command}`.")
                 return True
@@ -63,6 +65,7 @@ class Generation(commands.Cog):
         return False
     
     async def send_file(self, ctx: commands.Context, file_content, dir, filename):
+        filename = filename.replace(' ', '_').lower() 
         r_file = discord_utils.create_temp_file(filename, file_content, dir=dir)
         discord_utils.delete_file(dir+filename)
         await ctx.send(file = discord.File(fp=r_file, filename=filename))
@@ -73,7 +76,10 @@ class Generation(commands.Cog):
         '''
         Opens a channel for tournament registrations.
         '''
-        reg_channel_id = int(reg_channel_id.lstrip("<#").rstrip(">"))
+        try:
+            reg_channel_id = int(reg_channel_id.lstrip("<#").rstrip(">"))
+        except ValueError:
+            return await ctx.send("Invalid registration channel ID; the registration channel ID can either be the number ID from `Copy ID` or the `#channel-name`.")
         
         if reg_channel_id == ctx.channel.id:
             return await ctx.send("You cannot set the registration channel to this channel.")
@@ -88,10 +94,21 @@ class Generation(commands.Cog):
         if self.bot.generator_instances[ctx.channel.id].is_open():
             #did `,reset` but there's an existing open tournament instance
             pass
-
+        
+        try:
+            registrator = Registrator(sheets_id, use_rating=self_rating)
+        except Exception as error:
+            if isinstance(error, gspread.exceptions.APIError):
+                err_status = error.response.json()['error']['status']
+                if err_status == 'NOT_FOUND':
+                    return await ctx.send("The Google Sheets ID you provided was invalid or the bot cannot access it. Check that your Sheets ID is correct (it should be a long string of random characters after the `/d/` in the Sheets URL).\nAlso, make sure that the spreadsheet is shared with the bot's service client (`tournament-generator@tournament-generator-332215.iam.gserviceaccount.com`) with **edit** access.")
+                elif err_status == 'PERMISSION_DENIED':
+                    return await ctx.send("The bot cannot seem to access the Sheet you've provided. Make sure that the spreadsheet is shared with the bot's service client (`tournament-generator@tournament-generator-332215.iam.gserviceaccount.com`) with **edit** access.")
+            raise error
+            
         self.bot.generator_instances[ctx.channel.id].setup(reg_channel_id, sheets_id, self_rating, open, random)
         self.bot.registrator_instances[reg_channel_id] = RegChannel(self.bot, ctx)
-        self.bot.registrator_instances[reg_channel_id].setup(ctx.channel.id, sheets_id, self_rating)
+        self.bot.registrator_instances[reg_channel_id].setup(ctx.channel.id, sheets_id, self_rating, registrator=registrator)
         
         await ctx.send(f"I am now watching registrations in <#{reg_channel_id}>.")
     
@@ -120,11 +137,20 @@ class Generation(commands.Cog):
         '''
         Load player registrations and initialize the tournament.
         '''
+    
+        if not self.bot.generator_instances[ctx.channel.id].is_open() and sheets_id is not None:
+            init_mes = await ctx.send("Loading registrations from Google Sheets...")
+            self.bot.generator_instances[ctx.channel.id].skip_reg_setup(sheets_id, self_rating, open, random)
+        
         if await self.check_callable(ctx, "start"): return
 
         mes, round, file_content = self.bot.generator_instances[ctx.channel.id].start_tournament()
+        try:
+            await init_mes.edit(content="Registrations loaded.")
+        except:
+            pass
         dir = './temp_files/'
-        filename = f"{round.replace(' ', '_').lower()}_matchups-{ctx.channel.id}.txt"
+        filename = f"{round}_matchups-{ctx.channel.id}.txt"
         await ctx.send(mes)
         await self.send_file(ctx, file_content, dir, filename)
     
@@ -184,7 +210,7 @@ class Generation(commands.Cog):
         if file_content is None:
             return await ctx.send(mes)
         dir = './temp_files/'
-        filename = f"{round.replace(' ', '_').lower()}_matchups-{ctx.channel.id}.txt"
+        filename = f"{round}_matchups-{ctx.channel.id}.txt"
         await ctx.send(mes)
         await self.send_file(ctx, file_content, dir, filename)
     
@@ -203,7 +229,7 @@ class Generation(commands.Cog):
             return await ctx.send(mes)
 
         dir = './temp_files/'
-        filename = f"{round.replace(' ', '_').lower()}_status-{ctx.channel.id}.txt"
+        filename = f"{round}_status-{ctx.channel.id}.txt"
         await ctx.send(mes)
         await self.send_file(ctx, file_content, dir, filename)
 
@@ -220,7 +246,7 @@ class Generation(commands.Cog):
         if file_content is None:
             return await ctx.send(mes)
         dir = './temp_files/'
-        filename = f"{mes.replace(' ', '_').lower()}_results-{ctx.channel.id}.txt"
+        filename = f"{mes}_results-{ctx.channel.id}.txt"
         await self.send_file(ctx, file_content, dir, filename)
 
     @commands.command(aliases=['stop', 'done', 'reset', 'endtournament', 'clear'])
