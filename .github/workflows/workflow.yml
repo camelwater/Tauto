@@ -53,7 +53,7 @@ jobs:
         id: deploy
         run: |
           aws deploy create-deployment \
-            --application-name Discord-Bots \
-            --deployment-group-name tm-bot \
+            --application-name tournament-generator \
+            --deployment-group-name main \
             --deployment-config-name CodeDeployDefault.OneAtATime \
             --github-location repository=${{ github.repository }},commitId=${{ github.sha }}
