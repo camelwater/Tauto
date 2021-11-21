@@ -4,7 +4,8 @@ TM Bot is a general-purpose Discord Bot for managing tournaments of different fo
 
 ## Bot Setup
 
-To set up a tournament, create a Google Spreadsheet and share the spreadsheet with TM BOT's Google service client (`tournament-generator@tournament-generator-332215.iam.gserviceaccount.com`) with **edit** access.\
+To set up a tournament, create a Google Spreadsheet and share the spreadsheet with TM BOT's Google service client (`tournament-generator@tournament-generator-332215.iam.gserviceaccount.com`) with **edit** access.
+
 After you've created the spreadsheet and added TM BOT as an editor, you need the spreadsheet's ID, which can be found in the url. For example, given a spreadsheet URL https://docs.google.com/spreadsheets/d/5GQbuk86jqBbBMeLvj1c4VVsIqNdtGc-quWF3Hx6ImLI/edit#gid=0, the spreadsheet ID would be `5GQbuk86jqBbBMeLvj1c4VVsIqNdtGc-quWF3Hx6ImLI`. The spreadsheet ID is always the long string of characters after the `/d/`.
 
 ## Full Documentation
