@@ -68,21 +68,33 @@ class Generator:
         return f"Next round started. Round {self.round} generation complete.", "Prelim Round" if self.round==0 else f"Round {self.round}", self.matchups_to_str(next_round)
 
     def advance(self, advanced: list):
-        advanced = list(self.process_advancements(advanced))
-        self.current_advancements.extend(advanced)
-        return f"{len(advanced)} players advanced. {len(self.current_advancements)}/{len(self.get_current_groupings())} players advanced from {'preliminary round' if self.round==0 else f'round {self.round}'}."
+        players, errors = list(self.process_advancements(advanced))
+        header_mes = f"{len(players)} players advanced. {len(self.current_advancements)}/{len(self.get_current_groupings())} players advanced from {'preliminary round' if self.round==0 else f'round {self.round}'}."
+        if len(errors) == 0:
+            return header_mes
+
+        error_mes = f"\n\n{len(errors)} players could not be advanced:\n"
+        for o_p, p, err in errors:
+            error_mes+=f"`{o_p}`{f' ({p.getName()})' if p else ''}: {err}"
+        
+        return header_mes+error_mes
     
     def unadvance(self, players: list):
-        players = list(self.process_advancements(players))
-        for player in players:
-            try:
-                self.current_advancements.remove(player)
-            except:
-                pass
-        return f"{len(players)} players unadvanced. {len(self.current_advancements)}/{len(self.get_current_groupings())} players advanced from {'preliminary round' if self.round==0 else f'round {self.round}'}."
+        num_players, errors = list(self.process_unadvancements(players))
+
+        header_mes = f"{num_players} players unadvanced. {len(self.current_advancements)}/{len(self.get_current_groupings())} players advanced from {'preliminary round' if self.round==0 else f'round {self.round}'}."
+        if len(errors) == 0:
+            return header_mes
+        
+        error_mes = f"\n\n{len(errors)} players could not be unadvanced:\n"
+        for o_p, p, err in errors:
+            error_mes+=f"`{o_p}`{f' ({p.getName()})' if p else ''}: {err}"
+        
+        return header_mes+error_mes
 
     def determine_winner(self, players):
-        winner = list(self.process_advancements(players))[0]
+        winner, _ = list(self.process_advancements(players))
+        winner = winner[0]
         self.round_advancements[self.round].append(winner)
         self.winner = winner
 
@@ -133,15 +145,9 @@ class Generator:
         8 -> 1v8, 2v7, 3v6, 4v5
         '''
         middle = int(len(self.remaining_players)/2)
-        sorted_remaining= sorted(self.remaining_players, key=lambda player: player.getRating(), reverse=True)
+        sorted_remaining = sorted(self.remaining_players, key=lambda player: player.getRating(), reverse=True)
         matches = list()
-        # remaining_back = remaining_front[::-1][:middle]
-        # remaining_front = remaining_front[:middle]
-        # matches = list()
-        # for f, b in zip(remaining_front, remaining_back):
-        #     rand_num = rd.randint(0,1)
-        #     match = [f, b] if rand_num == 0 else [b, f]
-        #     matches.append(match)
+        
         for f, b in zip(range(middle), range(len(sorted_remaining)-1, middle-1, -1)):
             f = sorted_remaining[f]
             b = sorted_remaining[b]
@@ -156,9 +162,61 @@ class Generator:
         rd.shuffle(remaining)
         next_round_matches = gen_utils.group2(remaining)
         return next_round_matches
-            
+    
+    def process_unadvancements(self, unadvanced):
+        ua_players = 0
+        errors = []
+
+        for o_player in unadvanced:
+            if o_player.isnumeric() and (int(o_player)>len(self.players) or int(o_player) < 0):
+                errors.append((o_player, None, "player number doesn't exist"))
+                continue
+
+            player = gen_utils.try_get_player(o_player, self.players)
+            if not player:
+                errors.append((o_player, None, "player doesn't exist"))
+                continue
+            if player not in self.remaining_players:
+                errors.append((o_player, player, "player is not in current round"))
+                continue
+            if player not in self.current_advancements:
+                errors.append((o_player, player, "player has not been advanced"))
+                continue
+
+            ua_players+=1
+            self.current_advancements.remove(player)
+
+        return ua_players, errors
+
     def process_advancements(self, advanced):
-        return set([player for player in self.remaining_players if gen_utils.is_advanced(player, advanced)])
+        a_players = []
+        errors = []
+        for o_player in advanced:
+            if o_player.isnumeric() and (int(o_player)>len(self.players) or int(o_player) < 0):
+                errors.append((o_player, None, "player number doesn't exist"))
+                continue
+
+            player = gen_utils.try_get_player(o_player, self.players)
+            if not player:
+                errors.append((o_player, None, "player doesn't exist"))
+                continue
+            if player not in self.remaining_players:
+                errors.append((o_player, player, "player is not in current round"))
+                continue
+            if player in self.current_advancements:
+                errors.append((o_player, player, "player has already been advanced"))
+                continue
+            
+            matchup = copy.copy([match for match in self.get_current_groupings() if player in match][0])
+            matchup.remove(player)
+            if matchup[0] in self.current_advancements:
+                errors.append((o_player, player, "player's opponent has already been advanced"))
+                continue
+
+            a_players.append(player)
+            self.current_advancements.append(player)
+
+        return a_players, errors
 
     def matchups_to_str(self, matchups: List[List[Player]]):
         '''

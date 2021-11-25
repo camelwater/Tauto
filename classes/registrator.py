@@ -111,7 +111,7 @@ class Registrator:
         Find the next available range to insert a round's results.
         '''
         sheet_vals = self.res_sheet.get_values(major_dimension='COLUMNS')
-        start_col = len(sheet_vals)+2
+        start_col = len(sheet_vals) + (1 if len(sheet_vals) == 0 else 2)
         end_col = start_col+3
         start_row = 1
         end_row = start_row+2+num_entries

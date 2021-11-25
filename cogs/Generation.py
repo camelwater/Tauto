@@ -58,9 +58,9 @@ class Generation(commands.Cog):
         elif not self.bot.generator_instances[ctx.channel.id].is_active():
             await ctx.send(f"You need to have an active tournament before using `{ctx.prefix}{command}`.")
             return True
-        elif command!="finish" and self.bot.generator_instances[ctx.channel.id].is_finished():
-            await ctx.send(f"The tournament has already been finished. You can end the tournament with `{ctx.prefix}finish` or open a new one with `{ctx.prefix}open`.")
-            return True
+        # elif command!="finish" and self.bot.generator_instances[ctx.channel.id].is_finished():
+        #     await ctx.send(f"The tournament has already been finished. You can end the tournament with `{ctx.prefix}finish` or open a new one with `{ctx.prefix}open`.")
+        #     return True
 
         return False
     

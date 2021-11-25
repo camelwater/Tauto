@@ -132,8 +132,6 @@ class GenChannel:
 
         self.last_active = datetime.datetime.now()   
         ret = self.generator.determine_winner(players)
-        registration_instance = self.bot.registrator_instances[self.reg_channel] if not self.skip_reg else self.reg_instance
-        registration_instance.update_round_results(self.generator.get_round_results())
         return ret
     
     def next_round(self):
@@ -143,7 +141,7 @@ class GenChannel:
         
         registration_instance = self.bot.registrator_instances[self.reg_channel] if not self.skip_reg else self.reg_instance
         ret = self.generator.next_round()
-        registration_instance.update_round_results(self.generator.get_round_results())
+        registration_instance.update_round_results(self.generator.get_round_results(local_call=True))
         return ret
     
     def round_results(self, round):
@@ -153,7 +151,8 @@ class GenChannel:
         return self.generator.current_round_status()
     
     def end_tournament(self):
-        return
+        registration_instance = self.bot.registrator_instances[self.reg_channel] if not self.skip_reg else self.reg_instance
+        registration_instance.update_round_results(self.generator.get_round_results(local_call=True))
 
     def is_active(self):
         return self.active

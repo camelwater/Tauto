@@ -105,6 +105,10 @@ class TournamentBOT(commands.Bot):
             if isinstance(original_err, gspread.exceptions.APIError):
                 await ctx.send("An unidentified error with the Google API occurred. Try again later.")
             
+            await ctx.send(f"An unidentified internal bot error occurred. Wait a bit and try again later.\nIf this issue persists, `{ctx.prefix}reset` the tournament.")
+            error_tb = ''.join(tb.format_exception(type(error), error, error.__traceback__))
+            error_tb = error_tb[:error_tb.find('\nThe above exception was the direct cause of the following exception:')]
+            log.error(msg=f"in command: {ctx.command}\n{error_tb}")
             raise error
         else:
             await ctx.send(f"An unidentified internal bot error occurred. Wait a bit and try again later.\nIf this issue persists, `{ctx.prefix}reset` the tournament.")
