@@ -6,14 +6,14 @@ files:
 hooks:
   ApplicationStop:
    - location: scripts/stop_bot.sh
-     timeout: 60
+     timeout: 120
      runas: root
   AfterInstall:
    - location: scripts/install_bot_dependencies.sh
-     timeout: 60
+     timeout: 120
      runas: root
   ApplicationStart:
    - location: scripts/start_bot.sh
-     timeout: 60
+     timeout: 120
      runas: root
  
