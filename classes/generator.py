@@ -92,13 +92,21 @@ class Generator:
         
         return header_mes+error_mes
 
-    def determine_winner(self, players):
-        winner, _ = list(self.process_advancements(players))
-        winner = winner[0]
-        self.round_advancements[self.round].append(winner)
+    def advance_winner(self, player):
+        player = player[0]
+        winner, error = list(self.process_winner(player))
+        if error is not None:
+            o_p, p, mes = error
+            return f"`{o_p}`{f' ({p.getName()})' if p else ''} {mes}."
+
+        # self.round_advancements[self.round].append(winner)
         self.winner = winner
 
         return f"Final round finished. {self.winner.get_displayName()} is the winner."
+    
+    def determine_winner(self):
+        self.round_advancements[self.round].append(self.winner)
+        print(self.round_advancements)
 
     def get_last_advancements(self):
         return list(self.round_advancements.values())[-1]
@@ -163,6 +171,29 @@ class Generator:
         next_round_matches = gen_utils.group2(remaining)
         return next_round_matches
     
+    def process_winner(self, o_player):
+        winner = None
+        error = None
+
+        if o_player.isnumeric() and (int(o_player)>len(self.players) or int(o_player) < 0):
+            error = (o_player, None, "is not a valid player number")
+            return winner, error
+            
+        player = gen_utils.try_get_player(o_player, self.players)
+        if not player:
+            error = (o_player, None, "is not a valid player")
+            return winner, error
+        if player not in self.remaining_players:
+            error = (o_player, player, "is not in current round")
+            return winner, error
+        if player == self.winner:
+            error = (o_player, player, "is already the winner")
+            return winner, error
+
+        self.current_advancements = [player]
+        winner = player
+        return winner, error
+    
     def process_unadvancements(self, unadvanced):
         ua_players = 0
         errors = []
@@ -179,12 +210,14 @@ class Generator:
             if player not in self.remaining_players:
                 errors.append((o_player, player, "player is not in current round"))
                 continue
-            if player not in self.current_advancements:
+            if player not in self.current_advancements or (self.winner and player!=self.winner):
                 errors.append((o_player, player, "player has not been advanced"))
                 continue
 
             ua_players+=1
             self.current_advancements.remove(player)
+            if self.winner == player:
+                self.winner = None
 
         return ua_players, errors
 
@@ -234,7 +267,7 @@ class Generator:
             ret+="\n"
 
         for i, match in enumerate(matchups):
-            ret+=f"Match {i+1}: {discord_utils.disc_clean(match[0].get_full_display())} {{A}} vs. {discord_utils.disc_clean(match[1].get_full_display())} {{DA}}\n"
+            ret+=f"Match {i+1}: {discord_utils.disc_clean(match[0].get_full_display())} [A] vs. {discord_utils.disc_clean(match[1].get_full_display())} [DA]\n"
         
         return ret
 
@@ -254,22 +287,22 @@ class Generator:
     def __round_results(self, round, local_call):
         if local_call: #local call by update_round_results (from Registration)
             matchups = []
-            for num, match in enumerate(self.round_groupings[round]):  
+            for num, match in enumerate(self.round_groupings[round]):
                 player1 = match[0].get_full_display()
                 player2 = match[1].get_full_display()
-                match = [num+1, player1, player2] if player1 in self.round_advancements[round] else [num+1, player2, player1]
+                match = [num+1, player1, player2] if match[0] in self.round_advancements[round] else [num+1, player2, player1]
 
                 matchups.append(match)
             
             return matchups
         else:
-            ret = "Prelim Round Results\n[] = advanced player\n\n"
+            ret = f"Prelim Round Results\n{{}} = advanced player\n\n"
             for num, match in enumerate(self.round_groupings[round]):
                 ret+=f"Match {num+1}: "
                 if match[0] in self.round_advancements[round]:
-                    ret+=f"[{match[0].get_full_display()}] vs. {match[1].get_full_display()}"
+                    ret+=f"{{{match[0].get_full_display()}}} vs. {match[1].get_full_display()}"
                 else:
-                    ret+=f"{match[0].get_full_display()} vs. [{match[1].get_full_display()}]"
+                    ret+=f"{match[0].get_full_display()} vs. {{{match[1].get_full_display()}}}"
                 ret+="\n"
 
             return ret
@@ -303,24 +336,13 @@ class Generator:
         for match in unfinished_matches:
             ret+=f"{match[0].get_full_display()} vs. {match[1].get_full_display()}\n"
         
-        ret+= f"\n{len(finished_matches)} matches finished:\n[] = advanced player\n\n" if len(finished_matches)>0 else "\n0 matches finished"
+        ret+= f"\n{len(finished_matches)} matches finished:\n{{}} = advanced player\n\n" if len(finished_matches)>0 else "\n0 matches finished"
 
         for match in finished_matches:
             if match[0] in self.current_advancements:
-                    ret+=f"[{match[0].get_full_display()}] vs. {match[1].get_full_display()}"
+                    ret+=f"{{{match[0].get_full_display()}}} vs. {match[1].get_full_display()}"
             else:
-                ret+=f"{match[0].get_full_display()} vs. [{match[1].get_full_display()}]"
+                ret+=f"{match[0].get_full_display()} vs. {{{match[1].get_full_display()}}}"
             ret+="\n"
         
         return message, "Prelim Round" if self.round==0 else f"Round {self.round}", ret
-
-    # def overall_status(self):
-    #     ret = "TOURNAMENT MATCHES:\n"
-        
-    #     if self.prelim_round_matches:
-    #         ret+=self.current_round_status(prelim=True)
-
-    #     for num, round in enumerate(self.round_groupings):
-    #         ret+="\n"+self.current_round_status(num+1)
-    #     return ret
-  

@@ -131,10 +131,13 @@ class GenChannel:
             return "You cannot have more than one winner."
 
         self.last_active = datetime.datetime.now()   
-        ret = self.generator.determine_winner(players)
+        ret = self.generator.advance_winner(players)
         return ret
     
     def next_round(self):
+        if self.generator.winner:
+            self.end_tournament()
+
         round_finished, round, status_str, cur_round_status = self.generator.round_finished()
         if not round_finished:
             return f"The current round ({round}) is still in progress. " + status_str, round, cur_round_status
@@ -151,6 +154,7 @@ class GenChannel:
         return self.generator.current_round_status()
     
     def end_tournament(self):
+        self.generator.determine_winner()
         registration_instance = self.bot.registrator_instances[self.reg_channel] if not self.skip_reg else self.reg_instance
         registration_instance.update_round_results(self.generator.get_round_results(local_call=True))
 
