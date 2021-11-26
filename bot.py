@@ -308,7 +308,7 @@ def parse_args():
 if __name__ == "__main__":
     bot_key = parse_args()
     if bot_key: KEY = bot_key
-
+    
     bot = TournamentBOT()
     bot.run()
 
