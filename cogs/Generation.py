@@ -64,7 +64,7 @@ class Generation(commands.Cog):
             if reg_open is None or reg_open is True:
                 await ctx.send(f"You need to finish player registrations before using `{ctx.prefix}{command}`.")
                 return True
-        elif command!='open' and not self.bot.generator_instances[ctx.channel.id].is_active():
+        elif command not in {'open', 'close'} and not self.bot.generator_instances[ctx.channel.id].is_active():
             await ctx.send(f"You need to have an active tournament before using `{ctx.prefix}{command}`.")
             return True
         # elif command!="finish" and self.bot.generator_instances[ctx.channel.id].is_finished():
