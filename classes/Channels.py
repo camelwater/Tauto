@@ -129,7 +129,7 @@ class GenChannel:
 
         self.last_active = datetime.datetime.now()   
         ret = self.generator.advance_winner(players)
-        return ret + f"\n{self.prefix}finish to finalize the tournament's results."
+        return ret + f"\n`{self.prefix}finish` to finalize the tournament's results."
     
     def next_round(self):
         if self.generator.winner:

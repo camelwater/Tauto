@@ -86,7 +86,7 @@ class TournamentBOT(commands.Bot):
         elif isinstance(error, commands.NoPrivateMessage):
             await(await ctx.send("This command cannot be used in DMs.")).delete(delay=7)
         elif isinstance(error, commands.MissingPermissions):
-            await(await ctx.send(f"Sorry {ctx.author.mention}, you don't have permission to use this command. This command requires {', '.join(error.missing_perms)} permission(s).")).delete(delay=10.0)
+            await(await ctx.send(f"Sorry {ctx.author.mention}, you don't have permission to use this command. This command requires {', '.join(list(map(lambda l: f'`{l.upper()}`', error.missing_perms)))} permission(s).")).delete(delay=10.0)
         elif isinstance(error, commands.CommandOnCooldown):
             await(await ctx.send(f"This command can only be used once every {error.cooldown.per:.0f} seconds. You can retry in {error.retry_after:.1f} seconds.")).delete(delay=7)
         elif isinstance(error, commands.MaxConcurrencyReached):

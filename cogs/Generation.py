@@ -143,7 +143,7 @@ class Generation(commands.Cog):
 
         ''' 
         if await self.check_callable(ctx, "close"): return 
-        
+
         reg_channel_id = self.bot.generator_instances[ctx.channel.id].get_reg_channel()
         mes = self.bot.registrator_instances[reg_channel_id].close_reg()
         await ctx.send("Registrations have been closed.")
@@ -286,7 +286,10 @@ class Generation(commands.Cog):
             await ctx.send(f"Tournament has been reset. Do `{ctx.prefix}open` to open a new tournament.")
         reg_channel = gen_instance.get_reg_channel()
         self.bot.generator_instances.pop(ctx.channel.id)
-        self.bot.registrator_instances.pop(reg_channel)
+        try:
+            self.bot.registrator_instances.pop(reg_channel)
+        except KeyError: #registration instance doesn't exist (registration was skipped)
+            pass
 
 def setup(bot):
     bot.add_cog(Generation(bot))
