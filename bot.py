@@ -14,7 +14,7 @@ import classes.Channels as Channels
 
 import argparse
 from utils.discord_utils import SETTING_VALUES, SPLIT_DELIM, DEFAULT_PREFIXES
-import classes.Errors as Errors
+import classes.Exceptions as Exceptions
 import gspread
 
 
@@ -77,6 +77,7 @@ class TournamentBOT(commands.Bot):
         for ext in INIT_EXT:
             self.load_extension(ext)
 
+
     async def on_command_error(self, ctx: commands.Context, error):
         if isinstance(error, commands.CommandNotFound):
             # if not ctx.guild:
@@ -85,7 +86,7 @@ class TournamentBOT(commands.Bot):
         elif isinstance(error, commands.NoPrivateMessage):
             await(await ctx.send("This command cannot be used in DMs.")).delete(delay=7)
         elif isinstance(error, commands.MissingPermissions):
-            await(await ctx.send(f"Sorry {ctx.author.mention}, you don't have permission to use this command.")).delete(delay=10.0)
+            await(await ctx.send(f"Sorry {ctx.author.mention}, you don't have permission to use this command. This command requires {', '.join(error.missing_perms)} permission(s).")).delete(delay=10.0)
         elif isinstance(error, commands.CommandOnCooldown):
             await(await ctx.send(f"This command can only be used once every {error.cooldown.per:.0f} seconds. You can retry in {error.retry_after:.1f} seconds.")).delete(delay=7)
         elif isinstance(error, commands.MaxConcurrencyReached):
@@ -97,13 +98,13 @@ class TournamentBOT(commands.Bot):
             await(ctx.send("Bad command input: missing a closing `\"`.", delete_after=10))
         elif isinstance(error, commands.BotMissingPermissions):
             await ctx.send("I am missing these required permissions:" + ", ".join(error.missing_perms))
-        elif isinstance(error, Errors.RegChannelSetupError):
-            await ctx.send(f"You have not set up this channel to be a registration channel. If you'd like to set this channel as a registration channel, use `{ctx.prefix}open`.", delete_after=7)
         elif isinstance(error, commands.CommandInvokeError):
             original_err = error.original
             
             if isinstance(original_err, gspread.exceptions.APIError):
-                await ctx.send("An unidentified error with the Google API occurred. Try again later.")
+                return await ctx.send("An unidentified error with the Google API occurred. Try again later.")
+            elif isinstance(original_err, Exceptions.RegChannelSetupError):
+                return await ctx.send(f"You have not set up this channel to be a registration channel. If you'd like to set this channel as a registration channel, use `{ctx.prefix}open`.", delete_after=15)
             
             await ctx.send(f"An unidentified internal bot error occurred. Wait a bit and try again later.\nIf this issue persists, `{ctx.prefix}reset` the tournament.")
             error_tb = ''.join(tb.format_exception(type(error), error, error.__traceback__))

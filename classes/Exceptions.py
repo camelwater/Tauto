@@ -1,0 +1,3 @@
+class RegChannelSetupError(Exception):
+    pass
+

@@ -1,7 +1,6 @@
 import discord
 from discord.ext import commands
-from pyasn1_modules.rfc2459 import AdministrationDomainName
-from classes.Errors import *
+from classes.Exceptions import *
 import bot
 
 class Registration(commands.Cog):
@@ -22,23 +21,23 @@ class Registration(commands.Cog):
     @commands.Cog.listener()
     async def on_command(self, ctx: commands.Context):
         if ctx.command not in self.bot.get_cog('Registration').get_commands(): return
-        # self.check_instance(ctx)
+        # await self.check_instance(ctx)
 
-    def check_instance(self, ctx: commands.Context):
+    async def check_instance(self, ctx: commands.Context):
         '''
-        Add a RegChannel instance into the generator_instances dictionary if it isn't present.
         '''
-
         channel_id = ctx.channel.id
         
         if channel_id in self.bot.registrator_instances: 
+            # self.bot.registrator_instances[channel_id].ctx = ctx
             self.bot.registrator_instances[channel_id].prefix = ctx.prefix
             return
-
+        
+        await ctx.send(f"You have not set up this channel to be a registration channel. If you'd like to set this channel as a registration channel, use `{ctx.prefix}open`.", delete_after=15)
         raise RegChannelSetupError
 
     async def cog_before_invoke(self, ctx):
-        self.check_instance(ctx)
+        await self.check_instance(ctx)
     
     @commands.command(aliases=['r', 'c', 'can', 'reg', 'join', 'j'])
     async def register(self, ctx: commands.Context, name: str, rating: str = None):
@@ -58,7 +57,7 @@ class Registration(commands.Cog):
     
     @register.error
     async def register_error(self, ctx: commands.Context, error):
-        self.check_instance(ctx)
+        await self.check_instance(ctx)
         if self.bot.registrator_instances[ctx.channel.id].is_closed():
             return 
 
@@ -92,21 +91,6 @@ class Registration(commands.Cog):
         reaction, mes = self.bot.registrator_instances[ctx.channel.id].drop_player(ctx.message.author.id)
         await ctx.message.add_reaction(reaction)
         if mes:
-            await ctx.send(mes)
-
-    @commands.command(aliases=['end','endreg', 'stopreg', 'closereg'])
-    @commands.has_permissions(administrator=True)
-    async def close(self, ctx: commands.Context):
-        '''
-        Close player registrations.
-        '''
-        if ctx.channel.id in self.bot.registrator_instances:
-            if self.bot.registrator_instances[ctx.channel.id].is_closed():
-                return 
-            await ctx.send(self.bot.registrator_instances[ctx.channel.id].close_reg())
-        elif ctx.channel.id in self.bot.generator_instances:
-            reg_channel_id = self.bot.generator_instances[ctx.channel.id].get_reg_channel()
-            mes = self.bot.registrator_instances[reg_channel_id].close_reg()
             await ctx.send(mes)
 
 def setup(bot):

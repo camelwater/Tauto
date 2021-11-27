@@ -1,4 +1,5 @@
 
+from discord.ext import commands
 from classes.registrator import Registrator
 from classes.generator import Generator
 import bot
@@ -7,9 +8,8 @@ import datetime
 
 class RegChannel:
 
-    def __init__(self, bot: bot.TournamentBOT, ctx):
+    def __init__(self, bot: bot.TournamentBOT, ctx: commands.Context):
         self.bot = bot
-        self.ctx = ctx
         self.prefix = ctx.prefix
         
         self.registrator = None
@@ -52,9 +52,6 @@ class RegChannel:
     
     def using_rating(self):
         return self.use_rating
-    
-    def get_ctx(self):
-        return self.ctx
     
     def set_reg(self, registrator):
         self.registrator = registrator
@@ -132,7 +129,7 @@ class GenChannel:
 
         self.last_active = datetime.datetime.now()   
         ret = self.generator.advance_winner(players)
-        return ret
+        return ret + f"\n{self.prefix}finish to finalize the tournament's results."
     
     def next_round(self):
         if self.generator.winner:
@@ -170,6 +167,7 @@ class GenChannel:
         return self.bot.registrator_instances[self.reg_channel].open
     
     def is_finished(self):
+        if self.generator is None: return False
         return self.generator.winner is not None
     
     def get_winner(self):
