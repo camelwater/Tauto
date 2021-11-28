@@ -70,7 +70,7 @@ class Generation(commands.Cog):
         await ctx.send(file = discord.File(fp=r_file, filename=filename))
 
     @commands.command(aliases=['o', 'openreg', 'openregistration'])
-    @commands.has_permissions(manage_server=True)
+    @commands.has_permissions(manage_guild=True)
     async def open(self, ctx: commands.Context, reg_channel_id: str, sheets_id: str, self_rating: bool = False, open: bool = True, random: bool = False):
         '''
         Opens a channel for tournament registrations.
@@ -140,7 +140,7 @@ class Generation(commands.Cog):
         await ctx.guild.get_channel(reg_channel_id).send(mes)
 
     @commands.command(aliases=['initialize', 'init', 'create', 'begin'])
-    @commands.has_permissions(manage_server=True)
+    @commands.has_permissions(manage_guild=True)
     async def start(self, ctx: commands.Context, sheets_id: str = None, self_rating: bool = False, open = True, random = False):
         '''
         Load player registrations and initialize the tournament.
@@ -172,7 +172,7 @@ class Generation(commands.Cog):
         await self.send_file(ctx, file_content, dir, filename)
     
     @commands.command(aliases=['a', 'adv'])
-    @commands.has_permissions(manage_server=True)
+    @commands.has_permissions(manage_guild=True)
     async def advance(self, ctx: commands.Context, *, players_arg):
         '''
         Advance a group of players to the next round.
@@ -194,7 +194,7 @@ class Generation(commands.Cog):
             await self.send_temp_messages(ctx, f"Usage: `{ctx.prefix}advance [player, ...]`")
     
     @commands.command(aliases=['ua', 'unadv'])
-    @commands.has_permissions(manage_server=True)
+    @commands.has_permissions(manage_guild=True)
     async def unadvance(self, ctx: commands.Context, *, players_arg):
         '''
         Unadvance a group of players from the next round advanced pool.
@@ -216,7 +216,7 @@ class Generation(commands.Cog):
             await self.send_temp_messages(ctx, f"Usage: `{ctx.prefix}unadvance [player, ...]`")
     
     @commands.command(aliases=['increment', 'next'])
-    @commands.has_permissions(manage_server=True)
+    @commands.has_permissions(manage_guild=True)
     async def nextround(self, ctx: commands.Context):
         '''
         Move on to the next round.
@@ -232,7 +232,7 @@ class Generation(commands.Cog):
         await self.send_file(ctx, file_content, dir, filename)
     
     @commands.command(aliases=['rs', 'roundstatus'])
-    @commands.has_permissions(manage_server=True)
+    @commands.has_permissions(manage_guild=True)
     async def status(self, ctx: commands.Context):
         '''
         Get the status (matchups that have finished and matchups that are still in progress) of the current round.
@@ -252,7 +252,7 @@ class Generation(commands.Cog):
 
 
     @commands.command(aliases=['rr', 'roundresults', 'res'])
-    @commands.has_permissions(manage_server=True)
+    @commands.has_permissions(manage_guild=True)
     async def results(self, ctx: commands.Context, round = -1):
         '''
         Get the results of a specific round (all matchups and winners of each matchup).
@@ -267,7 +267,7 @@ class Generation(commands.Cog):
         await self.send_file(ctx, file_content, dir, filename)
 
     @commands.command(aliases=['stop', 'done', 'reset', 'endtournament', 'clear', 'end'])
-    @commands.has_permissions(manage_server=True)
+    @commands.has_permissions(manage_guild=True)
     async def finish(self, ctx: commands.Context):
         '''
         Finish the tournament, update the results to the Google Sheet, and clear the generation instance.
