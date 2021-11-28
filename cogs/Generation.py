@@ -53,23 +53,13 @@ class Generation(commands.Cog):
             return True
         
         if command!= 'open' and ctx.channel.id not in self.bot.generator_instances:
-            await ctx.send(f"You need to have an active tournament before using `{ctx.prefix}{command}`.")
+            await ctx.send(f"You need open a tournament before using `{ctx.prefix}{command}`.")
             return True
 
-        if command=='start':
-            if self.bot.generator_instances[ctx.channel.id].reg_channel is None:
-                await ctx.send(f"You need to have an open tournament and have finished player registrations before using `{ctx.prefix}{command}`.")
-                return True
-            reg_open = self.bot.generator_instances[ctx.channel.id].reg_open()
-            if reg_open is None or reg_open is True:
-                await ctx.send(f"You need to finish player registrations before using `{ctx.prefix}{command}`.")
-                return True
-        elif command not in {'open', 'close'} and not self.bot.generator_instances[ctx.channel.id].is_active():
+        if command not in {'open', 'close', 'finish'} and not self.bot.generator_instances[ctx.channel.id].is_active():
             await ctx.send(f"You need to have an active tournament before using `{ctx.prefix}{command}`.")
             return True
-        # elif command!="finish" and self.bot.generator_instances[ctx.channel.id].is_finished():
-        #     await ctx.send(f"The tournament has already been finished. You can end the tournament with `{ctx.prefix}finish` or open a new one with `{ctx.prefix}open`.")
-        #     return True
+        
 
         return False
     
@@ -162,6 +152,14 @@ class Generation(commands.Cog):
             self.bot.generator_instances[ctx.channel.id].skip_reg_setup(sheets_id, self_rating, open, random)
         
         if await self.check_callable(ctx, "start"): return
+
+        if self.bot.generator_instances[ctx.channel.id].reg_channel is None:
+            await ctx.send(f"You need to have an open tournament and have finished player registrations before using `{ctx.prefix}start`.")
+            return True
+        reg_open = self.bot.generator_instances[ctx.channel.id].reg_open()
+        if reg_open is None or reg_open is True:
+            await ctx.send(f"You need to finish player registrations before using `{ctx.prefix}start`.")
+            return True
 
         mes, round, file_content = self.bot.generator_instances[ctx.channel.id].start_tournament()
         try:
@@ -274,7 +272,8 @@ class Generation(commands.Cog):
         '''
         Finish the tournament, update the results to the Google Sheet, and clear the generation instance.
         '''
-        # if await self.check_callable(ctx, "finish"): return
+        if await self.check_callable(ctx, "finish"): return
+
         gen_instance = self.bot.generator_instances[ctx.channel.id]
         if not gen_instance.is_active() and not gen_instance.is_open():
             return await ctx.send("You don't have an active tournament to stop.")
