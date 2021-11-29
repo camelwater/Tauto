@@ -11,6 +11,13 @@ class Settings(commands.Cog):
     def __init__(self, bot: bot.TournamentBOT):
         self.bot = bot
     
+    @commands.Cog.listener()
+    async def on_message(self, message: discord.Message):
+        if message.author == self.bot or message.author.bot: return
+        if not self.bot.user.mentioned_in(message): return
+        if message.content.rstrip() in [f'<@!{self.bot.user.id}>', f'<@{self.bot.user.id}>']:
+            await self.help(await self.bot.get_context(message))
+
     @commands.command(aliases=['h'])
     async def help(self, ctx: commands.Context):
         link1 = "[Introduction](https://github.com/camelwater/tournament-generator/blob/main/README.md)"
