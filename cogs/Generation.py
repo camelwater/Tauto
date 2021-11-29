@@ -51,16 +51,17 @@ class Generation(commands.Cog):
         if ctx.channel.id in self.bot.registrator_instances:
             await ctx.send("You cannot use generation commands in registration channels.")
             return True
+    
+        if command == 'open': return False
         
-        if command!= 'open' and ctx.channel.id not in self.bot.generator_instances:
-            await ctx.send(f"You need open a tournament before using `{ctx.prefix}{command}`.")
+        if ctx.channel.id not in self.bot.generator_instances:
+            await ctx.send(f"You don't have an open tournament. If you'd like to open a tournament, do `{ctx.prefix}open`.")
             return True
 
-        if command not in {'open', 'close', 'finish'} and not self.bot.generator_instances[ctx.channel.id].is_active():
+        if command not in {'close', 'start', 'finish'} and not self.bot.generator_instances[ctx.channel.id].is_active():
             await ctx.send(f"You need to have an active tournament before using `{ctx.prefix}{command}`.")
             return True
         
-
         return False
     
     async def send_file(self, ctx: commands.Context, file_content, dir, filename):
@@ -158,7 +159,7 @@ class Generation(commands.Cog):
             return True
         reg_open = self.bot.generator_instances[ctx.channel.id].reg_open()
         if reg_open is None or reg_open is True:
-            await ctx.send(f"You need to finish player registrations before using `{ctx.prefix}start`.")
+            await ctx.send(f"You need to close player registrations before using `{ctx.prefix}start`. To close player registrations, do `{ctx.prefix}close`.")
             return True
 
         mes, round, file_content = self.bot.generator_instances[ctx.channel.id].start_tournament()
@@ -223,13 +224,19 @@ class Generation(commands.Cog):
         '''
         if await self.check_callable(ctx, "nextround"): return
 
-        mes, round, file_content = self.bot.generator_instances[ctx.channel.id].next_round()
+        if self.bot.generator_instances[ctx.channel.id].is_finished():
+            return await self.finish(ctx)
+
+        round_finished, mes, round, file_content = self.bot.generator_instances[ctx.channel.id].next_round()
         if file_content is None:
             return await ctx.send(mes)
         dir = './temp_files/'
-        filename = f"{round}_matchups-{ctx.channel.id}.txt"
+        filename = f"{round}-{ctx.channel.id}.txt"
         await ctx.send(mes)
         await self.send_file(ctx, file_content, dir, filename)
+
+        if round_finished:
+            self.bot.generator_instances[ctx.channel.id].update_round_results()
     
     @commands.command(aliases=['rs', 'roundstatus'])
     @commands.has_permissions(manage_guild=True)
@@ -281,14 +288,26 @@ class Generation(commands.Cog):
         if gen_instance.is_finished():
             gen_instance.end_tournament()
             await ctx.send(f"Tournament has been ended. Congratulations to the winner: {gen_instance.get_winner().get_displayName()}!")
+            gen_instance.update_round_results()
         else:
             await ctx.send(f"Tournament has been reset. Do `{ctx.prefix}open` to open a new tournament.")
+
         reg_channel = gen_instance.get_reg_channel()
         self.bot.generator_instances.pop(ctx.channel.id)
         try:
             self.bot.registrator_instances.pop(reg_channel)
         except KeyError: #registration instance doesn't exist (registration was skipped)
             pass
+    
+    @commands.command(aliases=['getsheet', 'googlesheet', 'sheets', 'spreadsheet'])
+    @commands.has_permissions(manage_guild=True)
+    async def sheet(self, ctx: commands.Context):
+        '''
+        Get a link of the spreadsheet associated with the tournament.
+        '''
+        if await self.check_callable(ctx, "sheet"): return
+
+        return await ctx.send(self.bot.generator_instances[ctx.channel.id].get_sheet_link())
 
 def setup(bot):
     bot.add_cog(Generation(bot))

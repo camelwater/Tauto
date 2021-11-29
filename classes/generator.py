@@ -60,12 +60,17 @@ class Generator:
         '''
         initialize next round's matchups
         '''
+        round_finished, round, status_str, cur_round_status = self.round_finished()
+        if not round_finished:
+            return round_finished, f"The current round ({round}) is still in progress. " + status_str, round+" status", cur_round_status
+
         self.round_advancements[self.round].extend(self.current_advancements)
         self.round+=1
         next_round = self.generate_round(self.current_advancements)
         self.current_advancements = []
 
-        return f"Next round started. Round {self.round} generation complete.", "Prelim Round" if self.round==0 else f"Round {self.round}", self.matchups_to_str(next_round)
+        return (round_finished, f"Next round started. Round {self.round} ({gen_utils.get_round_name(len(self.remaining_players))}) generation complete.",
+                f"Round {self.round} Matchups", self.matchups_to_str(next_round))
 
     def advance(self, advanced: list):
         players, errors = list(self.process_advancements(advanced))
@@ -106,7 +111,6 @@ class Generator:
     
     def determine_winner(self):
         self.round_advancements[self.round].append(self.winner)
-        print(self.round_advancements)
 
     def get_last_advancements(self):
         return list(self.round_advancements.values())[-1]
@@ -255,7 +259,7 @@ class Generator:
         '''
         Convert round matchups (list of lists) to a string.
         '''
-        cur_round = "Preliminary Round" if self.round == 0 else f"Round {self.round}"
+        cur_round = "Preliminary Round" if self.round == 0 else f"Round {self.round} ({gen_utils.get_round_name(len(self.remaining_players))})"
         ret = cur_round + " Matchups\n\n"
 
         if isinstance(matchups, tuple): #prelim round
@@ -296,7 +300,8 @@ class Generator:
             
             return matchups
         else:
-            ret = f"Prelim Round Results\n{{}} = advanced player\n\n"
+            round_str = "Prelim Round" if round == 0 else f"Round {round} ({gen_utils.get_round_name(len(self.round_groupings[round])*2)})"
+            ret = f"{round_str} Results\n{{}} = advanced player\n\n"
             for num, match in enumerate(self.round_groupings[round]):
                 ret+=f"Match {num+1}: "
                 if match[0] in self.round_advancements[round]:
@@ -320,7 +325,7 @@ class Generator:
 
         shows which players from matchups have already been advanced, and which matchups are still in progress.
         '''
-        message = f"{len(self.current_advancements)}/{len(self.get_current_groupings())} matches finished in {'preliminary round' if self.round==0 else f'round {self.round}'}."
+        message = f"{len(self.current_advancements)}/{len(self.get_current_groupings())} matches finished in {'preliminary round' if self.round==0 else f'round {self.round} ({gen_utils.get_round_name(len(self.get_current_groupings())*2)})'}."
 
         finished_matches = []
         unfinished_matches = []

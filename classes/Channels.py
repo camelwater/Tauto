@@ -20,6 +20,7 @@ class RegChannel:
         self.sheets_id = sheets_id
         self.use_rating = use_rating
         self.registrator = registrator if registrator else Registrator(sheets_id, use_rating=use_rating)
+        self.registrator.setup_sheets()
         self.open = True
     
     def register_player(self, user_id: int, name: str, rating: int = None, force=False):
@@ -45,7 +46,7 @@ class RegChannel:
         self.registrator.add_round_results(results)
     
     def cleanup_reg(self):
-        self.registrator.reg_sheet = None
+        self.registrator.reg_sheet = None #clean up registration sheet because no longer using it
     
     def is_closed(self):
         return not self.open
@@ -63,9 +64,10 @@ class RegChannel:
         return self.gen_channel
     
 
+
 class GenChannel:
 
-    def __init__(self, bot: bot.TournamentBOT, ctx, generator=None):
+    def __init__(self, bot: bot.TournamentBOT, ctx: commands.Context, generator=None):
         self.bot = bot
         self.ctx = ctx
         self.prefix = ctx.prefix
@@ -105,7 +107,6 @@ class GenChannel:
             registrator_instance = self.bot.registrator_instances[self.reg_channel]
             player_list = registrator_instance.load_registrations()
             player_list = list(map(lambda l: Player(int(l[0]), None if l[1].lower()=="none" else int(l[1]), l[2], None if l[3].lower()=="none" else int(l[3])), player_list)) # convert lists into player objects
-            # self.bot.registrator_instances.pop(self.reg_channel) #remove registrator instance now that we are done using it
             registrator_instance.cleanup_reg()
 
         self.generator = Generator(player_list, is_open=self.open, random=self.random)
@@ -132,17 +133,11 @@ class GenChannel:
         return ret + f"\n`{self.prefix}finish` to finalize the tournament's results."
     
     def next_round(self):
-        if self.generator.winner:
-            self.end_tournament()
-
-        round_finished, round, status_str, cur_round_status = self.generator.round_finished()
-        if not round_finished:
-            return f"The current round ({round}) is still in progress. " + status_str, round, cur_round_status
-        
+        return self.generator.next_round()
+    
+    def update_round_results(self):
         registration_instance = self.bot.registrator_instances[self.reg_channel] if not self.skip_reg else self.reg_instance
-        ret = self.generator.next_round()
         registration_instance.update_round_results(self.generator.get_round_results(local_call=True))
-        return ret
     
     def round_results(self, round):
         return self.generator.get_round_results(round)
@@ -152,8 +147,6 @@ class GenChannel:
     
     def end_tournament(self):
         self.generator.determine_winner()
-        registration_instance = self.bot.registrator_instances[self.reg_channel] if not self.skip_reg else self.reg_instance
-        registration_instance.update_round_results(self.generator.get_round_results(local_call=True))
 
     def is_active(self):
         return self.active
@@ -181,3 +174,8 @@ class GenChannel:
     
     def get_reg_channel(self):
         return self.reg_channel
+    
+    def get_sheet_link(self):
+        link = f"https://docs.google.com/spreadsheets/d/{self.sheets_id}/edit?"
+        mes = f"*sheetID:* {self.sheets_id} | {link}"
+        return mes

@@ -1,6 +1,5 @@
 import os
 from typing import List
-# import pandas as pd
 import gspread, gspread.utils
 
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets", 'https://spreadsheets.google.com/feeds']
@@ -9,22 +8,22 @@ GC = None
 LOCAL_CREDENTIALS_FILE = "resources/credentials_private.json"
 SERVER_CREDENTIALS_FILE = "resources/credentials.json"
 
-def load_google_creds():
-    load_creds(local=os.path.getsize(SERVER_CREDENTIALS_FILE) == 2)
+def get_google_creds():
+    return load_creds(local=os.path.getsize(SERVER_CREDENTIALS_FILE) == 2)
 
 def load_creds(local=False):
-    global GC
     creds_file = LOCAL_CREDENTIALS_FILE if local else SERVER_CREDENTIALS_FILE
-    GC = gspread.service_account(creds_file)
+    return gspread.service_account(creds_file)
 
-load_google_creds()
+GC = get_google_creds()
 
 class Registrator:
     def __init__(self, sheets_id, use_rating=False):
         self.sheets_id = sheets_id
         self.use_rating = use_rating
-        self.formatted = False
-        sheets = GC.open_by_key(sheets_id)
+    
+    def setup_sheets(self):
+        sheets = GC.open_by_key(self.sheets_id)
 
         self.reg_sheet = sheets.get_worksheet(0)
         self.reg_sheet.update_title("Registration")
@@ -144,11 +143,3 @@ class Registrator:
 
 #     reg.add_registration(['123912t30923', 'Zion Rao', None])
 #     reg.remove_registration('123912t30923')
-    
-
-
-
-
-
-
-

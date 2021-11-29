@@ -18,6 +18,7 @@ import classes.Exceptions as Exceptions
 import gspread
 
 
+TESTING = True if dotenv_values(".env.testing") else False
 creds = dotenv_values(".env.testing") or dotenv_values(".env") #.env.testing for local testing, .env for deployment
 KEY = creds['KEY']
 LOG_LOC = 'logs/logs.log'
@@ -58,7 +59,7 @@ def callable_prefix(bot, msg: discord.Message, mention=True) -> List[str]:
         base = default
     else:
         base.extend(bot.prefixes.get(msg.guild.id, default))
-        base.append('$')
+        if TESTING: base.append('?')
 
     if mention:
         return commands.when_mentioned_or(*base)(bot, msg)

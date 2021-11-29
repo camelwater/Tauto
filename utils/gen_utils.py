@@ -13,6 +13,12 @@ def try_get_player(player, remaining_players):
             return p
     return None
 
+def get_round_name(number_left: int):
+    name_mapping = {8: "Quarterfinals", 4: "Semifinals", 2: "Finals"}
+    if number_left not in {8, 4, 2}:
+        return f"of {number_left}"
+    return name_mapping[number_left]
+
 def group2(players, shuffle_color=True):#UTILS
     groups = list(chunks(players, 2))
     if shuffle_color:
@@ -33,7 +39,6 @@ def calculate_std_dev(collection):
 
 def __calculate_variance(collection, mean):
     return sum(list(map(lambda k: (k-mean)**2, collection)))/(len(collection)-1)
-
 
 def next_power2(x):
     return 1<<(x-1).bit_length()
