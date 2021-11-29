@@ -18,7 +18,7 @@ class Player:
     
     def get_displayName(self, discord=True):
         if not discord: return f"{self.name}"
-        return f"{self.name}" + (f" - <@{self.discord_id}>" if self.discord_id else "")
+        return f"{discord_utils.disc_clean(self.name)}" + (f" - <@{self.discord_id}>" if self.discord_id else "")
     
     def getRating(self):
         return self.rating or 0
