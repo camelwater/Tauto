@@ -27,7 +27,7 @@ class Player:
         return self.__str__(discord=discord)
 
     def __str__(self, discord=False):
-        return f"{self.id}. {self.get_displayName(discord=discord)} (rating={self.rating or 'Unrated'})"
+        return f"[{self.id}] {self.get_displayName(discord=discord)} (rating={self.rating or 'Unrated'})"
 
     def __repr__(self):
         return f"Player(id={self.id}, disc_id={self.discord_id}, name={self.name}, rating={self.rating})"

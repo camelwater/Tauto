@@ -13,6 +13,17 @@ def try_get_player(player, remaining_players):
             return p
     return None
 
+def get_bracket_order(advancements, last_bracket):
+    advancements = sorted(advancements, key=lambda l: find_player_bracket(l, last_bracket))
+    return advancements
+
+def find_player_bracket(player, bracket):
+    for ind, match in enumerate(bracket):
+        if player in match:
+            return ind
+    return -1
+
+
 def get_round_name(number_left: int):
     name_mapping = {8: "Quarterfinals", 4: "Semifinals", 2: "Finals"}
     if number_left not in {8, 4, 2}:

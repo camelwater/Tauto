@@ -1,9 +1,10 @@
 import io
 import os
+from collections import namedtuple
 
 
 SETTING_VALUES = {
-    'defaultOpen': {
+    'defaultSeeding': {
         0: 0, 
         "f": 0,
         "false": 0,
@@ -15,7 +16,7 @@ SETTING_VALUES = {
         "yes": 1, 
         "y": 1
     }, 
-    'defaultRandom':{
+    'defaultBracket':{
         0: 0, 
         "f": 0,
         "false": 0,
@@ -32,6 +33,9 @@ SETTING_VALUES = {
 SPLIT_DELIM = '{d/D17¤85xu§ey¶}'
 DEFAULT_PREFIXES = [';', ',']
 
+TOURNAMENT_TYPES = namedtuple('Tournament', ['SINGLE', 'DOUBLE', 'CL'])
+
+
 def create_temp_file(filename, content, dir='.', no_ret = False):
     with open(dir+filename, 'w', encoding='utf-8') as e_file:
         e_file.write(content)
@@ -46,3 +50,6 @@ def delete_file(filename):
 
 def disc_clean(msg: str):
     return msg.replace("*", "\*").replace("`",'\`').replace("_", "\_").replace("~~", "\~~")
+
+def convert_str_to_tournament(tournament):
+    pass

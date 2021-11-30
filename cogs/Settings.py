@@ -105,7 +105,7 @@ class Settings(commands.Cog):
         spaces = max([len(k[0]) for k in settings.items()])+1
         out = f'asciidoc\n== [{ctx.guild.name}] server settings =='
         for name, val in settings.items():
-            if name in ['defaultOpen', 'defaultRandom']:
+            if name in ['defaultSeeding', 'defaultBracket']:
                 val = bool(val)
             
             out+="\n{}{}:: {}".format(name, " "*(spaces-len(name)), val)
@@ -145,16 +145,11 @@ class Settings(commands.Cog):
             return
 
         valid = False
-        if settingType in ['defaultOpen', 'defaultRandom']:
+        if settingType in ['defaultSeeding', 'defaultBracket']:
             if default.isnumeric():
                 default = int(default)
                 if default in SETTING_VALUES[settingType]: valid = True
             else:
-                # for k, v in SETTING_VALUES[settingType].items():
-                #     if default.lower() in map(lambda l: l.lower(), v.values()):
-                #         default = k
-                #         valid = True
-                #         break
                 if default.lower() in SETTING_VALUES[settingType].keys(): valid = True
                 
         else:
@@ -163,7 +158,7 @@ class Settings(commands.Cog):
 
         if not valid:
             await ctx.send(f"Invalid value `{default}` for setting `{settingType}`. The value must be"+
-                        f"one of the following:\n{get_avail_settings(settingType)}")
+                        f" one of the following:\n{get_avail_settings(settingType)}")
             return
 
         mes = self.bot.set_setting(ctx.guild.id, settingType, default)

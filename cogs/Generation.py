@@ -2,7 +2,6 @@ import copy
 import discord
 from discord.ext import commands
 import gspread
-from classes.generator import Generator
 from classes.Channels import RegChannel, GenChannel
 from classes.registrator import Registrator
 import bot
@@ -34,7 +33,6 @@ class Generation(commands.Cog):
         '''
         Add a GenChannel instance into the generator_instances dictionary if it isn't present.
         '''
-        # if ctx.command.qualified_name == "start": return
 
         channel_id = ctx.channel.id
         
@@ -72,7 +70,7 @@ class Generation(commands.Cog):
 
     @commands.command(aliases=['o', 'openreg', 'openregistration'])
     @commands.has_permissions(manage_guild=True)
-    async def open(self, ctx: commands.Context, reg_channel_id: str, sheets_id: str, self_rating: bool = False, open: bool = True, random: bool = False):
+    async def open(self, ctx: commands.Context, reg_channel_id: str, sheets_id: str, self_rating: bool = False, tournament_type: str = "SINGLE", seeding: bool = True, bracket: bool = False):
         '''
         Opens a channel for tournament registrations.
         '''
@@ -93,45 +91,49 @@ class Generation(commands.Cog):
         if not ctx.guild.get_channel(reg_channel_id):
             return await ctx.send("The registration channel you provided was invalid.")
         
+        tournament_type = discord_utils.convert_str_to_tournament(tournament_type)
+
+        
         # if self.bot.generator_instances[ctx.channel.id].is_open():
         #     #did `,reset` but there's an existing open tournament instance
         #     pass
         
+        init_mes = ctx.send("Setting up Google Spreadsheet...")
+                
+        self.bot.generator_instances[ctx.channel.id] = GenChannel(self.bot, ctx)
+        self.bot.generator_instances[ctx.channel.id].setup(tournament_type, reg_channel_id, sheets_id, self_rating, seeding, bracket)
+
+        self.bot.registrator_instances[reg_channel_id] = RegChannel(self.bot, ctx)
         try:
-            registrator = Registrator(sheets_id, use_rating=self_rating)
+            self.bot.registrator_instances[reg_channel_id].setup(ctx.channel.id, sheets_id, self_rating, registrator=Registrator(sheets_id, use_rating=self_rating))
         except Exception as error:
+            await init_mes.delete()
             if isinstance(error, gspread.exceptions.APIError):
                 err_status = error.response.json()['error']['status']
                 if err_status == 'NOT_FOUND':
-                    return await ctx.send("The Google Sheets ID you provided was invalid or the bot cannot access it. Check that your Sheets ID is correct (it should be a long string of random characters after the `/d/` in the Sheets URL).\nAlso, make sure that the spreadsheet is shared with the bot's service client (`tournament-generator@tournament-generator-332215.iam.gserviceaccount.com`) with **edit** access.")
+                    return await ctx.send("The Google Sheets ID you provided was invalid or I cannot access it. Check that your Sheets ID is correct (it should be a long string of random characters after the `/d/` in the Sheets URL).\nAlso, make sure that the spreadsheet is shared with my service client (`tournament-generator@tournament-generator-332215.iam.gserviceaccount.com`) with **edit** access.")
                 elif err_status == 'PERMISSION_DENIED':
-                    return await ctx.send("The bot cannot seem to access the Sheet you've provided. Make sure that the spreadsheet is shared with the bot's service client (`tournament-generator@tournament-generator-332215.iam.gserviceaccount.com`) with **edit** access.")
+                    return await ctx.send("I cannot access the Spreadsheet you've provided because I lack adequate permissions. Make sure that the spreadsheet is shared with my service client (`tournament-generator@tournament-generator-332215.iam.gserviceaccount.com`) with **edit** access.")
             raise error
         
-        self.bot.generator_instances[ctx.channel.id] = GenChannel(self.bot, ctx)
-            
-        self.bot.generator_instances[ctx.channel.id].setup(reg_channel_id, sheets_id, self_rating, open, random)
-
-        self.bot.registrator_instances[reg_channel_id] = RegChannel(self.bot, ctx)
-        self.bot.registrator_instances[reg_channel_id].setup(ctx.channel.id, sheets_id, self_rating, registrator=registrator)
-        
+        await init_mes.delete()
         await ctx.send(f"I am now watching registrations in <#{reg_channel_id}>.")
     
     @open.error
     async def open_error(self, ctx: commands.Context, error):
+        self.set_instance(ctx)
         if await self.check_callable(ctx, 'open'): return 
 
         if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send(f"Usage: `{ctx.prefix}open [registrationChannelID] [sheetsID] (rating=False) (open=True) (random=False)`")
+            await ctx.send(f"Usage: `{ctx.prefix}open [registrationChannelID] [sheetsID] (rating=False) (seeding=True) (bracket=True)`")
         elif isinstance(error, commands.BadArgument):
             await self.send_messages(ctx, f"Error processing paramters: {', '.join(error.args)}", 
-                f"Usage: `{ctx.prefix}open [registrationChannelID] [sheetsID] (rating=False) (open=True) (random=False)`")
+                f"Usage: `{ctx.prefix}open [registrationChannelID] [sheetsID] (rating=False) (seeding=True) (bracket=True)`")
 
     @commands.command(aliases=['endreg', 'closereg', 'stopreg'])
     async def close(self, ctx: commands.Context):
         '''
-        Closes the registration.
-
+        Closes the registration channel.
         ''' 
         if await self.check_callable(ctx, "close"): return 
 
@@ -142,15 +144,15 @@ class Generation(commands.Cog):
 
     @commands.command(aliases=['initialize', 'init', 'create', 'begin'])
     @commands.has_permissions(manage_guild=True)
-    async def start(self, ctx: commands.Context, sheets_id: str = None, self_rating: bool = False, open = True, random = False):
+    async def start(self, ctx: commands.Context, sheets_id: str = None, self_rating: bool = False, tournament_type: str = "SINGLE", seeding = True, bracket = True):
         '''
-        Load player registrations and initialize the tournament.
+        Load player registrations and initialize the tournament's first round.
         '''
-    
         if sheets_id is not None:
+            tournament_type = discord_utils.convert_str_to_tournament(tournament_type)
             self.bot.generator_instances[ctx.channel.id] = GenChannel(self.bot, ctx)
             init_mes = await ctx.send("Loading registrations from Google Sheets...")
-            self.bot.generator_instances[ctx.channel.id].skip_reg_setup(sheets_id, self_rating, open, random)
+            self.bot.generator_instances[ctx.channel.id].skip_reg_setup(tournament_type, sheets_id, self_rating, seeding, bracket)
         
         if await self.check_callable(ctx, "start"): return
 
@@ -167,6 +169,8 @@ class Generation(commands.Cog):
             await init_mes.edit(content="Registrations loaded.")
         except:
             pass
+        if not file_content:
+            return await ctx.send(mes)
         dir = './temp_files/'
         filename = f"{round}_matchups-{ctx.channel.id}.txt"
         await ctx.send(mes)
@@ -198,7 +202,7 @@ class Generation(commands.Cog):
     @commands.has_permissions(manage_guild=True)
     async def unadvance(self, ctx: commands.Context, *, players_arg):
         '''
-        Unadvance a group of players from the next round advanced pool.
+        Unadvance a group of players from the next round's advanced pool.
         '''
         #TODO: process different player args (have to split by newlines or another special character)
         if await self.check_callable(ctx, "unadvance"): return

@@ -37,18 +37,19 @@ log = logging.getLogger(__name__)
 
 conn = sqlite3.connect('resources/database.db')
 cur = conn.cursor()
-cur.execute('''CREATE TABLE IF NOT EXISTS servers (
-                id integer PRIMARY KEY,
-                prefixes text,
-                defaultOpen BIT,
-                defaultRandom BIT)''')
+
+# cur.execute('''CREATE TABLE IF NOT EXISTS servers (
+#                 id integer PRIMARY KEY,
+#                 prefixes text,
+#                 defaultSeeding BIT,
+#                 defaultBracket BIT)''')
 
 def fetch_prefixes_and_settings() -> Tuple[Dict, Dict]:
     cur.execute('SELECT * FROM servers')
     server_rows = cur.fetchall()
     server_pxs = {k[0]: k[1] for k in server_rows}
     # print(server_rows)
-    server_sets = {k[0]: {"defaultOpen": k[2] if k[2] is not None else 1, "defaultRandom": k[3] if k[3] is not None else 0} for k in server_rows}
+    server_sets = {k[0]: {"defaultSeeding": k[2] if k[2] is not None else 1, "defaultBracket": k[3] if k[3] is not None else 1} for k in server_rows}
    
     return {k: (p.split(SPLIT_DELIM) if p else []) for k, p in server_pxs.items()}, server_sets
 
@@ -124,7 +125,7 @@ class TournamentBOT(commands.Bot):
         for server in self.guilds:
             cur.execute('''INSERT OR IGNORE INTO servers
                             VALUES (?, ?, ?, ?)''', 
-                            (server.id, SPLIT_DELIM.join(DEFAULT_PREFIXES), 1, 0)) # id, prefixes, defaultOpen, defaultRandom (default value)
+                            (server.id, SPLIT_DELIM.join(DEFAULT_PREFIXES), 1, 1)) # id, prefixes, defaultSeeding, defaultBracket
             conn.commit()
 
         self.prefixes, self.settings = fetch_prefixes_and_settings()
@@ -137,7 +138,7 @@ class TournamentBOT(commands.Bot):
     async def on_guild_join(self, guild: discord.Guild):
         cur.execute('''INSERT OR IGNORE INTO servers
                         VALUES (?, ?, ?, ?)''',
-                        (guild.id, SPLIT_DELIM.join(DEFAULT_PREFIXES), 1, 0)) #id, prefixes, defaultOpen, defaultRandom
+                        (guild.id, SPLIT_DELIM.join(DEFAULT_PREFIXES), 1, 1)) #id, prefixes, defaultSeeding, defaultBracket
         conn.commit()
 
     @tasks.loop(seconds = 15)
@@ -233,24 +234,24 @@ class TournamentBOT(commands.Bot):
         return "Server prefixes have been reset to default."
 
     def get_guild_settings(self, guild) -> Dict[str, Any]:
-        default = {'defaultOpen': 1, 'defaultRandom': 0}
+        default = {'defaultSeeding': 1, 'defaultBracket': 1}
 
         return self.settings.get(guild, default)
     
     def reset_settings(self, guild):
-        default = {'defaultOpen': 1, 'defaultRandom': 0}
+        default = {'defaultSeeding': 1, 'defaultBracket': 1}
         self.settings[guild] = default
 
         cur.execute('''UPDATE servers 
-                        SET defaultOpen=?, defaultRandom=?
+                        SET defaultSeeding=?, defaultBracket=?
                         WHERE id=?''',
-                    (default.get('defaultOpen'), default.get('defaultRandom'), guild))
+                    (default.get('defaultSeeding'), default.get('defaultBracket'), guild))
         conn.commit()
 
         return "Server settings have been reset to default values."
     
     def set_setting(self, guild, setting, default):
-        default_sets = {'defaultOpen': 1, 'defaultRandom': 0}
+        default_sets = {'defaultSeeding': 1, 'defaultBracket': 1}
         if not default:
             try:
                 default = default_sets.get(setting)
@@ -266,7 +267,7 @@ class TournamentBOT(commands.Bot):
 
             return f"`{setting}` setting restored to default."
 
-        if setting in ['defaultOpen', 'defaultRandom']:
+        if setting in ['defaultSeeding', 'defaultBracket']:
             default = SETTING_VALUES[setting][default]
 
         try:
@@ -284,15 +285,14 @@ class TournamentBOT(commands.Bot):
         #                 FROM servers''')
         # print(cur.fetchall())
 
-
-        return "`{}` setting set to `{}`.".format(setting, bool(default) if setting in {'defaultOpen', 'defaultRandom'} else default)
+        return "`{}` setting set to `{}`.".format(setting, bool(default) if setting in {'defaultSeeding', 'defaultBracket'} else default)
     
     def get_setting(self, type, guild, raw = False):
-        default = {'defaultOpen': 1, 'defaultRandom': 0}
+        default = {'defaultSeeding': 1, 'defaultBracket': 1}
         setting = self.settings.get(guild, default).get(type)
         if raw:
             return setting
-        if type in {'defaultOpen', 'defaultRandom'}:
+        if type in {'defaultSeeding', 'defaultBracket'}:
             return bool(setting)
         return setting
     
