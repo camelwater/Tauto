@@ -2,3 +2,4 @@ __pycache__
 .env.testing
 credentials_private.json
 classes/registrator_async.py
+generator_testing.py
