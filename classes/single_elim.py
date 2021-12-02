@@ -27,10 +27,10 @@ class SingleElim(generator.Generator):
         
         '''
         if self.has_prelim: #tournament needs a prelim round
-            return f"Tournament started. Seeding={self.seeding}, Bracket={self.bracket}. Preliminary Round generation complete.", "Prelim Round", self.matchups_to_str(self.generate_prelim())
+            return f"Single-Elimination tournament started (seeding={self.seeding}, bracket={self.bracket}). Preliminary Round generation complete.", "Prelim Round", self.matchups_to_str(self.generate_prelim())
 
         self.round+=1
-        return f"Tournament started. Seeding={self.seeding}, Bracket={self.bracket}. Round 1 generation complete.", "Round 1", self.matchups_to_str(self.gen_first_round())
+        return f"Single-Elimination tournament started (seeding={self.seeding}, bracket={self.bracket}). Round 1 generation complete.", "Round 1", self.matchups_to_str(self.gen_first_round())
     
     def generate_prelim(self):
         if self.seeding:

@@ -21,10 +21,10 @@ import gspread
 TESTING = True if dotenv_values(".env.testing") else False
 creds = dotenv_values(".env.testing") or dotenv_values(".env") #.env.testing for local testing, .env for deployment
 KEY = creds['KEY']
-LOG_LOC = 'logs/logs.log'
 
 INIT_EXT = ['cogs.Registration', 'cogs.Generation', 'cogs.Settings']
 
+LOG_LOC = 'logs/logs.log'
 handlers = [RotatingFileHandler(filename=LOG_LOC, 
             mode='w', 
             maxBytes=512000, 
@@ -104,21 +104,21 @@ class TournamentBOT(commands.Bot):
             original_err = error.original
             
             if isinstance(original_err, gspread.exceptions.APIError):
-                return await ctx.send("An unidentified error with the Google API occurred. Try again later.")
+                return await ctx.send("I have encountered an unidentified error with the Google API occurred. Try again later.")
             elif isinstance(original_err, Exceptions.RegChannelSetupError):
                 return await ctx.send(f"You have not set up this channel to be a registration channel. If you'd like to set this channel as a registration channel, use `{ctx.prefix}open`.", delete_after=15)
             
-            await ctx.send(f"An unidentified internal bot error occurred. Wait a bit and try again later.\nIf this issue persists, `{ctx.prefix}reset` the tournament.")
-            error_tb = ''.join(tb.format_exception(type(error), error, error.__traceback__))
-            error_tb = error_tb[:error_tb.find('\nThe above exception was the direct cause of the following exception:')]
-            log.error(msg=f"in command: {ctx.command}\n{error_tb}")
+            await self.log_error(ctx, error)
             raise error
         else:
-            await ctx.send(f"An unidentified internal bot error occurred. Wait a bit and try again later.\nIf this issue persists, `{ctx.prefix}reset` the tournament.")
-            error_tb = ''.join(tb.format_exception(type(error), error, error.__traceback__))
-            error_tb = error_tb[:error_tb.find('\nThe above exception was the direct cause of the following exception:')]
-            log.error(msg=f"in command: {ctx.command}\n{error_tb}")
+            await self.log_error(ctx, error)
             raise error
+        
+    async def log_error(self, ctx, error):
+        await ctx.send(f"I have encountered an unidentified internal error. Wait a bit and try again later.\nIf this issue persists, `{ctx.prefix}reset` the tournament.")
+        error_tb = ''.join(tb.format_exception(type(error), error, error.__traceback__))
+        error_tb = error_tb[:error_tb.find('\nThe above exception was the direct cause of the following exception:')]
+        log.error(msg=f"in command: {ctx.command}\n{error_tb}")
 
     async def on_ready(self):
         print(f"Bot logged in as {self.user}")

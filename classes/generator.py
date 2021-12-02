@@ -5,8 +5,6 @@ import math
 import utils.gen_utils as gen_utils
 import classes.Player as Player
 from typing import List, Dict, Set
-import utils.discord_utils as discord_utils
-from collections import defaultdict
 
 class Generator:
     def __init__(self, players: List[Player.Player] = list(), seeding=True, bracket=True): 

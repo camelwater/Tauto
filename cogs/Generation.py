@@ -4,6 +4,7 @@ from discord.ext import commands
 import gspread
 from classes.Channels import RegChannel, GenChannel
 from classes.registrator import Registrator
+from classes.Components import TournamentFormatView
 import bot
 import utils.discord_utils as discord_utils
 
@@ -12,6 +13,7 @@ import utils.discord_utils as discord_utils
 class Generation(commands.Cog):
     def __init__(self, bot: bot.TournamentBOT):
         self.bot = bot
+        self.bot.selecting_formats = dict()
     
     async def send_temp_messages(self, ctx, *args):
         try:
@@ -49,6 +51,11 @@ class Generation(commands.Cog):
         if ctx.channel.id in self.bot.registrator_instances:
             await ctx.send("You cannot use generation commands in registration channels.")
             return True
+        
+        if ctx.channel.id in self.bot.selecting_formats: # discord Interaction for selecting tournament format hasn't been finished
+            prev_mes: discord.Message = self.bot.selecting_formats[ctx.channel.id]
+            await prev_mes.reply(f"Please finish selecting the tournament format.")
+            return True
     
         if command == 'open': return False
         
@@ -61,16 +68,10 @@ class Generation(commands.Cog):
             return True
         
         return False
-    
-    async def send_file(self, ctx: commands.Context, file_content, dir, filename):
-        filename = filename.replace(' ', '_').lower() 
-        r_file = discord_utils.create_temp_file(filename, file_content, dir=dir)
-        discord_utils.delete_file(dir+filename)
-        await ctx.send(file = discord.File(fp=r_file, filename=filename))
 
     @commands.command(aliases=['o', 'openreg', 'openregistration'])
     @commands.has_permissions(manage_guild=True)
-    async def open(self, ctx: commands.Context, reg_channel_id: str, sheets_id: str, self_rating: bool = False, tournament_type: str = "SINGLE", seeding: bool = True, bracket: bool = False):
+    async def open(self, ctx: commands.Context, reg_channel_id: str, sheets_id: str, tournament_format: str = None, self_rating: bool = False, seeding: bool = True, bracket: bool = False):
         '''
         Opens a channel for tournament registrations.
         '''
@@ -91,17 +92,15 @@ class Generation(commands.Cog):
         if not ctx.guild.get_channel(reg_channel_id):
             return await ctx.send("The registration channel you provided was invalid.")
         
-        tournament_type = discord_utils.convert_str_to_tournament(tournament_type)
 
-        
         # if self.bot.generator_instances[ctx.channel.id].is_open():
         #     #did `,reset` but there's an existing open tournament instance
         #     pass
         
-        init_mes = ctx.send("Setting up Google Spreadsheet...")
+        init_mes = await ctx.send("Setting up Google Spreadsheet...")
                 
         self.bot.generator_instances[ctx.channel.id] = GenChannel(self.bot, ctx)
-        self.bot.generator_instances[ctx.channel.id].setup(tournament_type, reg_channel_id, sheets_id, self_rating, seeding, bracket)
+        self.bot.generator_instances[ctx.channel.id].setup(None, reg_channel_id, sheets_id, self_rating, seeding, bracket)
 
         self.bot.registrator_instances[reg_channel_id] = RegChannel(self.bot, ctx)
         try:
@@ -117,6 +116,18 @@ class Generation(commands.Cog):
             raise error
         
         await init_mes.delete()
+
+        try:
+            tournament_type = discord_utils.convert_str_to_tournament(tournament_format)
+            self.bot.generator_instances[ctx.channel.id].tournament_type = tournament_type
+
+        except:
+            beg_mes = f"{tournament_format} is not a valid tournament format. " if tournament_format is not None else ""
+            view = TournamentFormatView(self.bot.generator_instances[ctx.channel.id])
+            interact_mes = await ctx.send(beg_mes + "Select a tournament format:", view=view)
+            self.bot.selecting_formats[ctx.channel.id] = interact_mes
+            return
+
         await ctx.send(f"I am now watching registrations in <#{reg_channel_id}>.")
     
     @open.error
@@ -125,10 +136,10 @@ class Generation(commands.Cog):
         if await self.check_callable(ctx, 'open'): return 
 
         if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send(f"Usage: `{ctx.prefix}open [registrationChannelID] [sheetsID] (rating=False) (seeding=True) (bracket=True)`")
+            await ctx.send(f"Usage: `{ctx.prefix}open [registrationChannelID] [sheetsID] (tournamentFormat) (rating=False) (seeding=True) (bracket=True)`")
         elif isinstance(error, commands.BadArgument):
             await self.send_messages(ctx, f"Error processing paramters: {', '.join(error.args)}", 
-                f"Usage: `{ctx.prefix}open [registrationChannelID] [sheetsID] (rating=False) (seeding=True) (bracket=True)`")
+                f"Usage: `{ctx.prefix}open [registrationChannelID] [sheetsID] (tournamentFormat) (rating=False) (seeding=True) (bracket=True)`")
 
     @commands.command(aliases=['endreg', 'closereg', 'stopreg'])
     async def close(self, ctx: commands.Context):
@@ -144,15 +155,26 @@ class Generation(commands.Cog):
 
     @commands.command(aliases=['initialize', 'init', 'create', 'begin'])
     @commands.has_permissions(manage_guild=True)
-    async def start(self, ctx: commands.Context, sheets_id: str = None, self_rating: bool = False, tournament_type: str = "SINGLE", seeding = True, bracket = True):
+    async def start(self, ctx: commands.Context, sheets_id: str = None, tournament_format: str = None, self_rating: bool = False, seeding = True, bracket = True):
         '''
         Load player registrations and initialize the tournament's first round.
         '''
         if sheets_id is not None:
-            tournament_type = discord_utils.convert_str_to_tournament(tournament_type)
             self.bot.generator_instances[ctx.channel.id] = GenChannel(self.bot, ctx)
+            self.bot.generator_instances[ctx.channel.id].skip_reg_setup(None, sheets_id, self_rating, seeding, bracket)
+            try:
+                tournament_type = discord_utils.convert_str_to_tournament(tournament_format)
+                self.bot.generator_instances[ctx.channel.id].tournament_type = tournament_type
+
+            except KeyError:
+                beg_mes = f"{tournament_format} is not a valid tournament format. " if tournament_format is not None else ""
+                view = TournamentFormatView(self.bot.generator_instances[ctx.channel.id])
+                interact_mes = await ctx.send(beg_mes + "Select a tournament format:", view=view)
+                self.selecting_format[ctx.channel.id] = interact_mes
+                return
+            
             init_mes = await ctx.send("Loading registrations from Google Sheets...")
-            self.bot.generator_instances[ctx.channel.id].skip_reg_setup(tournament_type, sheets_id, self_rating, seeding, bracket)
+
         
         if await self.check_callable(ctx, "start"): return
 
@@ -174,7 +196,7 @@ class Generation(commands.Cog):
         dir = './temp_files/'
         filename = f"{round}_matchups-{ctx.channel.id}.txt"
         await ctx.send(mes)
-        await self.send_file(ctx, file_content, dir, filename)
+        await discord_utils.send_file(ctx, file_content, dir, filename)
     
     @commands.command(aliases=['a', 'adv'])
     @commands.has_permissions(manage_guild=True)
@@ -237,7 +259,7 @@ class Generation(commands.Cog):
         dir = './temp_files/'
         filename = f"{round}-{ctx.channel.id}.txt"
         await ctx.send(mes)
-        await self.send_file(ctx, file_content, dir, filename)
+        await discord_utils.send_file(ctx, file_content, dir, filename)
 
         if round_finished:
             self.bot.generator_instances[ctx.channel.id].update_round_results()
@@ -259,7 +281,7 @@ class Generation(commands.Cog):
         dir = './temp_files/'
         filename = f"{round}_status-{ctx.channel.id}.txt"
         await ctx.send(mes)
-        await self.send_file(ctx, file_content, dir, filename)
+        await discord_utils.send_file(ctx, file_content, dir, filename)
 
 
     @commands.command(aliases=['rr', 'roundresults', 'res'])
@@ -275,7 +297,7 @@ class Generation(commands.Cog):
             return await ctx.send(mes)
         dir = './temp_files/'
         filename = f"{mes}_results-{ctx.channel.id}.txt"
-        await self.send_file(ctx, file_content, dir, filename)
+        await discord_utils.send_file(ctx, file_content, dir, filename)
 
     @commands.command(aliases=['stop', 'done', 'reset', 'endtournament', 'clear', 'end'])
     @commands.has_permissions(manage_guild=True)
@@ -294,6 +316,7 @@ class Generation(commands.Cog):
             await ctx.send(f"Tournament has been ended. Congratulations to the winner: {gen_instance.get_winner().get_displayName()}!")
             gen_instance.update_round_results()
         else:
+            self.bot.selecting_formats.pop(ctx.channel.id)
             await ctx.send(f"Tournament has been reset. Do `{ctx.prefix}open` to open a new tournament.")
 
         reg_channel = gen_instance.get_reg_channel()
