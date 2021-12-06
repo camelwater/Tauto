@@ -1,5 +1,5 @@
 # Change Log
-A history of all of TM Bot's notable changes over time.
+A history of all of Tauto's notable changes over time.
 
 ## 0.4.0 - IN PROGRESS
 Complete rework of GenChannel and Generator logic, with new formats (Double-Elimination and Champions League) added.
@@ -7,10 +7,14 @@ Complete rework of GenChannel and Generator logic, with new formats (Double-Elim
 ### Added
 - Two new formats: Double-Elimination and Champions League
 - New parameter requirements for Champions League tournaments
+- Bracketed tournaments
+- Drop down menus (:class:`discord.ui.Select` from discord.py v2.0) for users to choose tournament formats
 
 ### Changed
 - Logic between Generation cog commands, `RegChannel`s, and `GenChannel`s redone, due to new formats added.
+- Base class `Generator` created; for individual tournament classes to implement
 - Generation optional parameters changed from `open` and `random` to `seeding` and `bracket`, with server settings updated to reflect that
+- discord.py version bump to `v2.0 (alpha)`
 
 ## 0.3.2 - 11/28/21
 Various bug fixes to v0.3.0.

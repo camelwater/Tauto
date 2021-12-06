@@ -63,14 +63,17 @@ class Generator:
     def advance_winner(self, player):
         pass
     
+    @abstractmethod
     def determine_winner(self):
-        self.round_advancements[self.round].append(self.winner)
-
-    def get_last_advancements(self):
-        return list(self.round_advancements.values())[-1]
+        pass
     
+    @abstractmethod
+    def get_last_advancements(self):
+        pass
+    
+    @abstractmethod
     def get_current_groupings(self):
-        return list(self.round_groupings.values())[-1]
+        pass
     
     @abstractmethod
     def is_final(self):

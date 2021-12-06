@@ -52,7 +52,7 @@ class Generation(commands.Cog):
             await ctx.send("You cannot use generation commands in registration channels.")
             return True
         
-        if ctx.channel.id in self.bot.selecting_formats: # discord Interaction for selecting tournament format hasn't been finished
+        if command!="finish" and ctx.channel.id in self.bot.selecting_formats: # discord Interaction for selecting tournament format hasn't been finished
             prev_mes: discord.Message = self.bot.selecting_formats[ctx.channel.id]
             await prev_mes.reply(f"Please finish selecting the tournament format.")
             return True

@@ -281,9 +281,7 @@ class TournamentBOT(commands.Bot):
                         WHERE id=?''',
                         (default, guild))
         conn.commit()
-        # cur.execute('''SELECT * 
-        #                 FROM servers''')
-        # print(cur.fetchall())
+        
 
         return "`{}` setting set to `{}`.".format(setting, bool(default) if setting in {'defaultSeeding', 'defaultBracket'} else default)
     
