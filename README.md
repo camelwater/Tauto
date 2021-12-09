@@ -1,6 +1,6 @@
 # Tauto
 
-Tauto is a general-purpose Discord Bot for managing tournaments of different formats: single-elimination, double-elimination, Swiss, Round-Robin, and Champions League. TM BOT ameliorates tournament management by automating registrations and match generations, with support for seeded match-making.
+Tauto is a general-purpose Discord Bot for managing tournaments of different formats: single-elimination, double-elimination, Swiss, Round-Robin, and Champions League. Tauto ameliorates tournament management by automating registrations and match generations, with a host of other features, including seeded match-making.
 
 ## Setup
 
@@ -10,4 +10,4 @@ After you've created the spreadsheet and added Tauto as an editor, you will need
 
 ## Full Documentation
 
-To see all of Tauto's commands, their descriptions, and examples, see the [documentation](https://www.github.com/camelwater/tauto/wiki).
+For a full description of all of Tauto's commands and examples see the [documentation](https://www.github.com/camelwater/tauto/wiki).
