@@ -10,4 +10,4 @@ After you've created the spreadsheet and added Tauto as an editor, you will need
 
 ## Full Documentation
 
-For a full description of all of Tauto's commands and examples see the [documentation](https://www.github.com/camelwater/tauto/wiki).
+For a full description of all of Tauto's commands and examples, see the [documentation](https://www.github.com/camelwater/tauto/wiki).
