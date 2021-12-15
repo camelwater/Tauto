@@ -81,25 +81,46 @@ class GenChannel:
 
         self.generator = generator
 
-    def setup(self, tournament, reg_channel_id, sheets_id, self_rating, is_open, is_random):
+    def setup(self, tournament, reg_channel_id, sheets_id, self_rating, seeding, bracket):
         self.tournament_type = tournament
         self.reg_channel = reg_channel_id #registration channel associated with this generation channel
         self.use_ratings = self_rating
         self.sheets_id = sheets_id
-        self.open = is_open
-        self.random = is_random
+        self.seeding = seeding
+        self.bracket = bracket
     
-    def skip_reg_setup(self, tournament_type, sheets_id, self_rating, seed, bracket):
+    def skip_reg_setup(self, tournament_type, sheets_id, self_rating, seeding, bracket):
         self.tournament_type = tournament_type
         self.reg_channel = 0
         self.skip_reg = True
         self.use_rating = self_rating
         self.sheets_id = sheets_id
-        self.seeding = seed
+        self.seeding = seeding
         self.bracket = bracket
     
     def set_gen(self, generator):
         self.generator = generator
+    
+    async def set_tournament(self, format):
+        '''
+        Set tournament format from user's input for :class:`discord.ui.Select`
+        '''
+        self.tournament_type = format
+        self.bot.selecting_formats.pop(self.ctx.channel.id)
+
+        if self.skip_reg:
+            init_mes = await self.ctx.send("Loading registrations from Google Sheets...")
+            mes, round, file_content = self.start_tournament()
+            await init_mes.edit(content="Registrations loaded.")
+
+            if not file_content:
+                return await self.ctx.send(mes)
+            dir = './temp_files/'
+            filename = f"{round}_matchups-{self.ctx.channel.id}.txt"
+            await self.ctx.send(mes)
+            await d_utils.send_file(self.ctx, file_content, dir, filename)
+        else:
+            await self.ctx.send(f"I am now watching registrations in <#{self.reg_channel}>.")
     
     def start_tournament(self):
         if self.skip_reg:
@@ -117,7 +138,7 @@ class GenChannel:
         if len(player_list)<2:
             return f"Tournament must have at least 2 participants. This tournament has {len(player_list)} registered participants.", None, None
 
-        self.generator = se.SingleElim(player_list, seeding=self.seeding, bracket=self.bracket)
+        self.generator = TOURNAMENT_TO_OBJECT[self.tournament_type](player_list, seeding=self.seeding, bracket=self.bracket)
         ret = self.generator.start()
         
         self.active = True

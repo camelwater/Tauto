@@ -31,7 +31,7 @@ class Settings(commands.Cog):
     async def about(self, ctx):
         e = discord.Embed(title='Table BOT', description='')
 
-        e.add_field(name='\u200b', value=f'_WRITTEN IN:_ python with discord.py v1.7.3\n\
+        e.add_field(name='\u200b', value=f'_WRITTEN IN:_ python with discord.py v2.0\n\
                         _LINES OF CODE:_ {count_LOC()}\n_SERVER:_ AWS - Amazon Linux 2 AMI', inline=False)
 
         link = "[GitHub Repository](https://github.com/camelwater/tournament-generator)"
