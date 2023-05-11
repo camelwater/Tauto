@@ -21,10 +21,10 @@ import gspread
 TESTING = True if dotenv_values(".env.testing") else False
 creds = dotenv_values(".env.testing") or dotenv_values(".env") #.env.testing for local testing, .env for deployment
 KEY = creds['KEY']
-LOG_LOC = 'logs/logs.log'
 
 INIT_EXT = ['cogs.Registration', 'cogs.Generation', 'cogs.Settings']
 
+LOG_LOC = 'logs/logs.log'
 handlers = [RotatingFileHandler(filename=LOG_LOC, 
             mode='w', 
             maxBytes=512000, 
@@ -71,7 +71,6 @@ class TournamentBOT(commands.Bot):
     def __init__(self):
         super().__init__(command_prefix = callable_prefix , case_insensitive = True, intents = discord.Intents.all(), help_command = None)
         self.BOT_ID = 907717733582532659
-        self.presences = cycle([',help', "{} active tournaments"])
         # self.prefixes, self.settings = fetch_prefixes_and_settings()
         self.generator_instances: Dict[int, Channels.GenChannel] = dict() #gen_channel_id: GenChannel instance
         self.registrator_instances: Dict[int, Channels.RegChannel] = dict() #reg_channel_id: RegChannel instance
@@ -104,21 +103,21 @@ class TournamentBOT(commands.Bot):
             original_err = error.original
             
             if isinstance(original_err, gspread.exceptions.APIError):
-                return await ctx.send("An unidentified error with the Google API occurred. Try again later.")
+                return await ctx.send("I have encountered an unidentified error with the Google API occurred. Try again later.")
             elif isinstance(original_err, Exceptions.RegChannelSetupError):
                 return await ctx.send(f"You have not set up this channel to be a registration channel. If you'd like to set this channel as a registration channel, use `{ctx.prefix}open`.", delete_after=15)
             
-            await ctx.send(f"An unidentified internal bot error occurred. Wait a bit and try again later.\nIf this issue persists, `{ctx.prefix}reset` the tournament.")
-            error_tb = ''.join(tb.format_exception(type(error), error, error.__traceback__))
-            error_tb = error_tb[:error_tb.find('\nThe above exception was the direct cause of the following exception:')]
-            log.error(msg=f"in command: {ctx.command}\n{error_tb}")
+            await self.log_error(ctx, error)
             raise error
         else:
-            await ctx.send(f"An unidentified internal bot error occurred. Wait a bit and try again later.\nIf this issue persists, `{ctx.prefix}reset` the tournament.")
-            error_tb = ''.join(tb.format_exception(type(error), error, error.__traceback__))
-            error_tb = error_tb[:error_tb.find('\nThe above exception was the direct cause of the following exception:')]
-            log.error(msg=f"in command: {ctx.command}\n{error_tb}")
+            await self.log_error(ctx, error)
             raise error
+        
+    async def log_error(self, ctx, error):
+        await ctx.send(f"I have encountered an unidentified internal error. Wait a bit and try again later.\nIf this issue persists, `{ctx.prefix}reset` the tournament.")
+        error_tb = ''.join(tb.format_exception(type(error), error, error.__traceback__))
+        error_tb = error_tb[:error_tb.find('\nThe above exception was the direct cause of the following exception:')]
+        log.error(msg=f"in command: {ctx.command}\n{error_tb}")
 
     async def on_ready(self):
         print(f"Bot logged in as {self.user}")
@@ -131,7 +130,7 @@ class TournamentBOT(commands.Bot):
         self.prefixes, self.settings = fetch_prefixes_and_settings()
 
         try:
-            self.cycle_presences.start()
+            self.update_presence.start()
         except RuntimeError:
             print("cycle_presences task failed to start")
         
@@ -141,17 +140,10 @@ class TournamentBOT(commands.Bot):
                         (guild.id, SPLIT_DELIM.join(DEFAULT_PREFIXES), 1, 1)) #id, prefixes, defaultSeeding, defaultBracket
         conn.commit()
 
-    @tasks.loop(seconds = 15)
-    async def cycle_presences(self):
-        next_pres = next(self.presences)
-        if "active" in next_pres:
-            active_tournaments = self.count_active_tournaments()
-            if active_tournaments == 0:
-                next_pres = next(self.presences)
-            else:
-                next_pres = next_pres.format(active_tournaments)
-                if active_tournaments == 1: next_pres = next_pres.replace("tournaments", "tournament")
-
+    @tasks.loop(seconds=30)
+    async def update_presence(self):
+        num_active = self.count_active_tournaments()
+        next_pres = f"{num_active} active tournament{'' if num_active == 1 else 's'} | ,help"
         pres = discord.Activity(type=discord.ActivityType.watching, name=next_pres)
         await self.change_presence(status=discord.Status.online, activity=pres)
     
@@ -281,9 +273,7 @@ class TournamentBOT(commands.Bot):
                         WHERE id=?''',
                         (default, guild))
         conn.commit()
-        # cur.execute('''SELECT * 
-        #                 FROM servers''')
-        # print(cur.fetchall())
+        
 
         return "`{}` setting set to `{}`.".format(setting, bool(default) if setting in {'defaultSeeding', 'defaultBracket'} else default)
     

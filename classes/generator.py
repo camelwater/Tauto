@@ -5,8 +5,6 @@ import math
 import utils.gen_utils as gen_utils
 import classes.Player as Player
 from typing import List, Dict, Set
-import utils.discord_utils as discord_utils
-from collections import defaultdict
 
 class Generator:
     def __init__(self, players: List[Player.Player] = list(), seeding=True, bracket=True): 
@@ -65,14 +63,17 @@ class Generator:
     def advance_winner(self, player):
         pass
     
+    @abstractmethod
     def determine_winner(self):
-        self.round_advancements[self.round].append(self.winner)
-
-    def get_last_advancements(self):
-        return list(self.round_advancements.values())[-1]
+        pass
     
+    @abstractmethod
+    def get_last_advancements(self):
+        pass
+    
+    @abstractmethod
     def get_current_groupings(self):
-        return list(self.round_groupings.values())[-1]
+        pass
     
     @abstractmethod
     def is_final(self):

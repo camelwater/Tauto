@@ -27,10 +27,10 @@ class SingleElim(generator.Generator):
         
         '''
         if self.has_prelim: #tournament needs a prelim round
-            return f"Tournament started. Seeding={self.seeding}, Bracket={self.bracket}. Preliminary Round generation complete.", "Prelim Round", self.matchups_to_str(self.generate_prelim())
+            return f"Single-Elimination tournament started (seeding={self.seeding}, bracket={self.bracket}). Preliminary Round generation complete.", "Prelim Round", self.matchups_to_str(self.generate_prelim())
 
         self.round+=1
-        return f"Tournament started. Seeding={self.seeding}, Bracket={self.bracket}. Round 1 generation complete.", "Round 1", self.matchups_to_str(self.gen_first_round())
+        return f"Single-Elimination tournament started (seeding={self.seeding}, bracket={self.bracket}). Round 1 generation complete.", "Round 1", self.matchups_to_str(self.gen_first_round())
     
     def generate_prelim(self):
         if self.seeding:
@@ -75,6 +75,40 @@ class SingleElim(generator.Generator):
         
         self.round_groupings[self.round] = next_round_matches
         
+        return next_round_matches
+    
+    def bracketed_generation(self):
+        '''
+        generate next round matches through bracket
+        '''
+        return gen_utils.group2(self.remaining_players)
+
+    def seeded_generation(self):
+        '''
+        generate matches by seeds
+
+        number of remaining participants must be base 2
+
+        ex.
+        8 -> 1v8, 2v7, 3v6, 4v5
+        '''
+        middle = int(len(self.remaining_players)/2)
+        sorted_remaining = sorted(self.remaining_players, key=lambda player: player.getRating(), reverse=True)
+        matches = list()
+        
+        for f, b in zip(range(middle), range(len(sorted_remaining)-1, middle-1, -1)):
+            f = sorted_remaining[f]
+            b = sorted_remaining[b]
+            rand_num = rd.randint(0,1)
+            match = [f, b] if rand_num == 0 else [b, f]
+            matches.append(match)
+        
+        return matches
+        
+    def random_generation(self):
+        remaining = copy.copy(self.remaining_players)
+        rd.shuffle(remaining)
+        next_round_matches = gen_utils.group2(remaining)
         return next_round_matches
     
     def next_round(self):
@@ -130,59 +164,11 @@ class SingleElim(generator.Generator):
         self.winner = winner
 
         return f"Final round finished. {self.winner.get_displayName()} is the winner."
+        
     
-    # def determine_winner(self):
-    #     self.round_advancements[self.round].append(self.winner)
-
-    # def get_last_advancements(self):
-    #     return list(self.round_advancements.values())[-1]
+    def determine_winner(self):
+        self.round_advancements[self.round].append(self.winner)
     
-    # def get_current_groupings(self):
-    #     return list(self.round_groupings.values())[-1]
-        
-    def is_final(self):
-        '''
-        Whether the tournament is in the final round (1v1).
-        '''
-        return self.round>0 and len(self.get_current_groupings()) == 1
-
-    def round_finished(self):
-        return (len(self.current_advancements) == len(self.get_current_groupings()), "prelim round" if self.round==0 else f"round {self.round}",
-                    f"{len(self.current_advancements)}/{len(self.get_current_groupings())} players advanced.", self.current_round_status()[2])
-    
-    def bracketed_generation(self):
-        '''
-        generate next round matches through bracket
-        '''
-        return gen_utils.group2(self.remaining_players)
-
-    def seeded_generation(self):
-        '''
-        generate matches by seeds
-
-        number of remaining participants must be base 2
-
-        ex.
-        8 -> 1v8, 2v7, 3v6, 4v5
-        '''
-        middle = int(len(self.remaining_players)/2)
-        sorted_remaining = sorted(self.remaining_players, key=lambda player: player.getRating(), reverse=True)
-        matches = list()
-        
-        for f, b in zip(range(middle), range(len(sorted_remaining)-1, middle-1, -1)):
-            f = sorted_remaining[f]
-            b = sorted_remaining[b]
-            rand_num = rd.randint(0,1)
-            match = [f, b] if rand_num == 0 else [b, f]
-            matches.append(match)
-        
-        return matches
-        
-    def random_generation(self):
-        remaining = copy.copy(self.remaining_players)
-        rd.shuffle(remaining)
-        next_round_matches = gen_utils.group2(remaining)
-        return next_round_matches
     
     def process_winner(self, o_player):
         winner = None
@@ -263,6 +249,23 @@ class SingleElim(generator.Generator):
             self.current_advancements.append(player)
 
         return a_players, errors
+
+    def get_last_advancements(self):
+        return list(self.round_advancements.values())[-1]
+    
+    def get_current_groupings(self):
+        return list(self.round_groupings.values())[-1]
+        
+    def is_final(self):
+        '''
+        Whether the tournament is in the final round (1v1).
+        '''
+        return self.round>0 and len(self.get_current_groupings()) == 1
+
+    def round_finished(self):
+        return (len(self.current_advancements) == len(self.get_current_groupings()), "prelim round" if self.round==0 else f"round {self.round}",
+                    f"{len(self.current_advancements)}/{len(self.get_current_groupings())} players advanced.", self.current_round_status()[2])
+    
 
     def matchups_to_str(self, matchups: List[List[Player.Player]]):
         '''

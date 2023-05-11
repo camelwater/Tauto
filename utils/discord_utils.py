@@ -1,7 +1,7 @@
 import io
 import os
 from collections import namedtuple
-
+import discord
 
 SETTING_VALUES = {
     'defaultSeeding': {
@@ -48,8 +48,27 @@ def delete_file(filename):
     except (FileNotFoundError,IsADirectoryError):
         pass
 
+async def send_file(ctx, file_content, dir, filename):
+    filename = filename.replace(' ', '_').lower() 
+    r_file = create_temp_file(filename, file_content, dir=dir)
+    delete_file(dir+filename)
+    await ctx.send(file = discord.File(fp=r_file, filename=filename))
+
 def disc_clean(msg: str):
     return msg.replace("*", "\*").replace("`",'\`').replace("_", "\_").replace("~~", "\~~")
 
-def convert_str_to_tournament(tournament):
-    pass
+def convert_str_to_tournament(option_str: str):
+    
+    single_terms = {'singleelimination', 'single', 'se', 'singleelim'}
+    double_terms = {'doubleelimination', 'double', 'de', 'doubleelim'}
+    cl_terms = {'championsleague', 'cl', 'champions'}
+
+    option = option_str.lower().replace(" ", "")
+    if option in single_terms:
+        return TOURNAMENT_TYPES.SINGLE
+    elif option in double_terms:
+        return TOURNAMENT_TYPES.DOUBLE
+    elif option in cl_terms:
+        return TOURNAMENT_TYPES.CL
+    raise KeyError
+
