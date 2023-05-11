@@ -71,7 +71,6 @@ class TournamentBOT(commands.Bot):
     def __init__(self):
         super().__init__(command_prefix = callable_prefix , case_insensitive = True, intents = discord.Intents.all(), help_command = None)
         self.BOT_ID = 907717733582532659
-        self.presences = cycle([',help', "{} active tournaments"])
         # self.prefixes, self.settings = fetch_prefixes_and_settings()
         self.generator_instances: Dict[int, Channels.GenChannel] = dict() #gen_channel_id: GenChannel instance
         self.registrator_instances: Dict[int, Channels.RegChannel] = dict() #reg_channel_id: RegChannel instance
@@ -131,7 +130,7 @@ class TournamentBOT(commands.Bot):
         self.prefixes, self.settings = fetch_prefixes_and_settings()
 
         try:
-            self.cycle_presences.start()
+            self.update_presence.start()
         except RuntimeError:
             print("cycle_presences task failed to start")
         
@@ -141,17 +140,10 @@ class TournamentBOT(commands.Bot):
                         (guild.id, SPLIT_DELIM.join(DEFAULT_PREFIXES), 1, 1)) #id, prefixes, defaultSeeding, defaultBracket
         conn.commit()
 
-    @tasks.loop(seconds = 15)
-    async def cycle_presences(self):
-        next_pres = next(self.presences)
-        if "active" in next_pres:
-            active_tournaments = self.count_active_tournaments()
-            if active_tournaments == 0:
-                next_pres = next(self.presences)
-            else:
-                next_pres = next_pres.format(active_tournaments)
-                if active_tournaments == 1: next_pres = next_pres.replace("tournaments", "tournament")
-
+    @tasks.loop(seconds=30)
+    async def update_presence(self):
+        num_active = self.count_active_tournaments()
+        next_pres = f"{num_active} active tournament{'' if num_active == 1 else 's'} | ,help"
         pres = discord.Activity(type=discord.ActivityType.watching, name=next_pres)
         await self.change_presence(status=discord.Status.online, activity=pres)
     
